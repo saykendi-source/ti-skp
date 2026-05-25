@@ -501,17 +501,17 @@
     const CONFIG = {
       minimumValidAttendance: 10,
       maxAccuracyMeter: 100,
-      appsScriptUrl: "https://script.google.com/macros/s/AKfycbzvP-7HR9qAs08Oc-6OuBaz9IWD3H1YiuTPn-DNnynIbGk559DlAo4yuF6gdW7HjcUMBA/exec" // Isi dengan URL Google Apps Script Web App pada tahap berikutnya.
+      appsScriptUrl: "https://script.google.com/macros/s/AKfycbzm-NzZngMUgYGOC6Xd95yY4AIvmkRvlEAYY50xf0_HiN8mEUA4ZhHV0jMcnd2eAJEW9w/exec" // Isi dengan URL Google Apps Script Web App pada tahap berikutnya.
     };
 
-    const MAHASISWA = [
+    let MAHASISWA = [
       { nim: "202301001", nama: "Ahmad Rizki", angkatan: "2023", email: "ahmad@mail.com", role: "mahasiswa", status: "aktif" },
       { nim: "202301002", nama: "Siti Aminah", angkatan: "2023", email: "siti@mail.com", role: "mahasiswa", status: "aktif" },
       { nim: "202301003", nama: "Dimas Pratama", angkatan: "2023", email: "dimas@mail.com", role: "mahasiswa", status: "aktif" },
       { nim: "202301010", nama: "Budi Santoso", angkatan: "2023", email: "budi@mail.com", role: "mahasiswa", status: "aktif" }
     ];
 
-    const SEMINAR = [
+    let SEMINAR = [
       {
         seminar_id: "SMG001",
         nim_presenter: "202301010",
@@ -557,6 +557,7 @@
     ];
 
     let currentUser = null;
+    let isDataLoaded = false;
 
     const $ = (id) => document.getElementById(id);
 
@@ -604,7 +605,8 @@
       return `<span class="badge badge-danger">Ditolak</span>`;
     }
 
-    function login() {
+    async function login() {
+      await ensureDataLoaded();
       const nim = $("nimInput").value.trim();
       const user = MAHASISWA.find((item) => item.nim === nim && item.status === "aktif");
       if (!user) {
@@ -614,6 +616,84 @@
       currentUser = user;
       localStorage.setItem("currentNim", currentUser.nim);
       showDashboard();
+    }
+
+    function loadDataFromSpreadsheet() {
+      if (!CONFIG.appsScriptUrl) {
+        isDataLoaded = true;
+        return Promise.resolve({ status: "demo", message: "Menggunakan data demo di index.html" });
+      }
+
+      return jsonpRequest(CONFIG.appsScriptUrl, { action: "getInitialData" })
+        .then((response) => {
+          if (response.status !== "success") {
+            throw new Error(response.message || "Gagal membaca data spreadsheet");
+          }
+
+          MAHASISWA = (response.data.mahasiswa || []).map((item) => ({
+            nim: String(item.nim || "").trim(),
+            nama: item.nama || "",
+            angkatan: item.angkatan || "",
+            kelas: item.kelas || "",
+            role: item.role || "mahasiswa",
+            status: item.status || "aktif",
+            kode_akses: item.kode_akses || ""
+          }));
+
+          SEMINAR = (response.data.seminar || []).map((item) => ({
+            seminar_id: String(item.seminar_id || "").trim(),
+            nim_presenter: String(item.nim_presenter || "").trim(),
+            nama_presenter: item.nama_presenter || "",
+            judul: item.judul || "",
+            tanggal: item.tanggal || "",
+            jam_mulai: item.jam_mulai || "00:00",
+            jam_selesai: item.jam_selesai || "23:59",
+            ruang: item.ruang || "",
+            latitude: Number(item.latitude || 0),
+            longitude: Number(item.longitude || 0),
+            radius_meter: Number(item.radius_meter || 50),
+            status: item.status || "aktif"
+          }));
+
+          isDataLoaded = true;
+          return response;
+        })
+        .catch((error) => {
+          console.warn("Gagal membaca spreadsheet, memakai data demo:", error);
+          isDataLoaded = true;
+          return { status: "fallback", message: error.message };
+        });
+    }
+
+    function ensureDataLoaded() {
+      if (isDataLoaded) return Promise.resolve();
+      return loadDataFromSpreadsheet();
+    }
+
+    function jsonpRequest(url, params = {}) {
+      return new Promise((resolve, reject) => {
+        const callbackName = `jsonpCallback_${Date.now()}_${Math.round(Math.random() * 100000)}`;
+        const script = document.createElement("script");
+        const query = new URLSearchParams({ ...params, callback: callbackName });
+
+        window[callbackName] = (data) => {
+          cleanup();
+          resolve(data);
+        };
+
+        function cleanup() {
+          delete window[callbackName];
+          if (script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        script.onerror = () => {
+          cleanup();
+          reject(new Error("Gagal memuat data dari Apps Script"));
+        };
+
+        script.src = `${url}?${query.toString()}`;
+        document.body.appendChild(script);
+      });
     }
 
     function logout() {
@@ -850,14 +930,16 @@
       if (event.key === "Enter") login();
     });
 
-    const savedNim = localStorage.getItem("currentNim");
-    if (savedNim) {
-      const user = MAHASISWA.find((item) => item.nim === savedNim);
-      if (user) {
-        currentUser = user;
-        showDashboard();
+    loadDataFromSpreadsheet().then(() => {
+      const savedNim = localStorage.getItem("currentNim");
+      if (savedNim) {
+        const user = MAHASISWA.find((item) => item.nim === savedNim);
+        if (user) {
+          currentUser = user;
+          showDashboard();
+        }
       }
-    }
+    });
   </script>
 </body>
 </html>
