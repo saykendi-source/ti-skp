@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presensi Seminar Magang GPS</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #e5e7eb;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --soft-primary: #dbeafe;
+      --soft-success: #dcfce7;
+      --soft-warning: #fef3c7;
+      --soft-danger: #fee2e2;
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 45%, #eef2ff 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      background: rgba(255, 255, 255, 0.86);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .topbar {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 800;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      box-shadow: 0 12px 28px rgba(37, 99, 235, 0.22);
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    .brand h1 {
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .brand p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 20px 52px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: var(--radius);
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07);
+      padding: 20px;
+    }
+
+    .login-card {
+      grid-column: span 5;
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .info-card {
+      grid-column: span 7;
+      min-height: 420px;
+      background: linear-gradient(135deg, #1d4ed8, #4f46e5);
+      color: #fff;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .info-card::after {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+      right: -70px;
+      bottom: -80px;
+    }
+
+    .info-card p { color: rgba(255, 255, 255, 0.82); }
+
+    .hero-title {
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.08;
+      margin-bottom: 16px;
+      max-width: 680px;
+    }
+
+    .hero-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 26px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 16px 0 8px;
+      font-weight: 700;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid #d0d5dd;
+      border-radius: 13px;
+      font: inherit;
+      background: #fff;
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    button, .btn {
+      border: 0;
+      border-radius: 13px;
+      padding: 12px 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s ease;
+      font: inherit;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 12px 22px rgba(37, 99, 235, 0.22);
+    }
+
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+    .btn-light { background: #f1f5f9; color: #0f172a; }
+    .btn-light:hover { background: #e2e8f0; }
+
+    .btn-danger { background: var(--soft-danger); color: var(--danger); }
+    .btn-success { background: var(--soft-success); color: var(--success); }
+    .btn-warning { background: var(--soft-warning); color: #92400e; }
+
+    .hidden { display: none !important; }
+
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+    }
+
+    .stat-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .stat-card strong {
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    .progress-wrap {
+      background: #e5e7eb;
+      border-radius: 999px;
+      height: 14px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #2563eb, #22c55e);
+      border-radius: 999px;
+      transition: width 0.45s ease;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-title h2 { font-size: 20px; }
+    .section-title p { font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+    .seminar-list, .history-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .seminar-item, .history-item {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      background: #fff;
+      display: grid;
+      gap: 12px;
+    }
+
+    .seminar-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .seminar-head h3 { font-size: 16px; line-height: 1.35; }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .badge-success { color: var(--success); background: var(--soft-success); }
+    .badge-warning { color: #92400e; background: var(--soft-warning); }
+    .badge-danger { color: var(--danger); background: var(--soft-danger); }
+    .badge-primary { color: var(--primary); background: var(--soft-primary); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      overflow: hidden;
+      border-radius: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 11px 10px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th { color: var(--muted); background: #f8fafc; font-size: 12px; }
+
+    .notice {
+      border-left: 4px solid var(--primary);
+      background: #eff6ff;
+      color: #1e3a8a;
+      padding: 13px 14px;
+      border-radius: 14px;
+      margin-top: 14px;
+      font-size: 14px;
+    }
+
+    .notice.warn { border-left-color: var(--warning); background: #fffbeb; color: #92400e; }
+    .notice.danger { border-left-color: var(--danger); background: #fef2f2; color: #991b1b; }
+
+    .small { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+    footer {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 20px 30px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 920px) {
+      .login-card, .info-card { grid-column: span 12; }
+      .dashboard-layout { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 560px) {
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .stats { grid-template-columns: 1fr; }
+      .seminar-head { flex-direction: column; }
+      button, .btn { width: 100%; }
+      main { padding-inline: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">SM</div>
+        <div>
+          <h1>Presensi Seminar Magang</h1>
+          <p>QR/GPS-ready MVP untuk GitHub Pages</p>
+        </div>
+      </div>
+      <div class="button-row" id="headerActions">
+        <button class="btn-light hidden" id="btnExport">Export CSV</button>
+        <button class="btn-danger hidden" id="btnLogout">Keluar</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="loginView" class="grid">
+      <div class="card login-card">
+        <h2>Masuk Mahasiswa</h2>
+        <p class="small" style="margin-top: 8px;">Gunakan NIM contoh di bawah untuk mencoba aplikasi. Pada tahap berikutnya, data NIM akan dibaca dari Google Sheets.</p>
+
+        <label for="nimInput">NIM</label>
+        <input id="nimInput" type="text" placeholder="Contoh: 202301001" autocomplete="off" />
+
+        <div class="button-row">
+          <button class="btn-primary" id="btnLogin">Masuk Dashboard</button>
+          <button class="btn-light" id="btnFillDemo">Isi NIM Demo</button>
+        </div>
+
+        <div class="notice">
+          <strong>NIM demo:</strong> 202301001, 202301002, 202301003. Data ini masih contoh dan tersimpan di browser.
+        </div>
+      </div>
+
+      <div class="card info-card">
+        <h2 class="hero-title">Validasi 10 kehadiran seminar magang dengan GPS.</h2>
+        <p>Mahasiswa dapat melihat jadwal seminar, melakukan presensi dengan lokasi, dan memantau kelayakan sebelum mengajukan seminar magang.</p>
+        <div class="hero-list">
+          <div class="hero-item">✅ Minimal 10 kehadiran valid sebelum seminar magang.</div>
+          <div class="hero-item">📍 GPS geofencing untuk memastikan mahasiswa berada di lokasi seminar.</div>
+          <div class="hero-item">🕒 Validasi waktu agar presensi hanya dilakukan saat seminar berlangsung.</div>
+          <div class="hero-item">🚫 Mahasiswa tidak dapat menghitung kehadiran pada seminar miliknya sendiri.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboardView" class="hidden">
+      <div class="stats">
+        <div class="stat-card">
+          <span>Kehadiran Valid</span>
+          <strong id="statValid">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Sisa Kehadiran</span>
+          <strong id="statSisa">10</strong>
+        </div>
+        <div class="stat-card">
+          <span>Total Presensi</span>
+          <strong id="statTotal">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Status</span>
+          <strong id="statStatus" style="font-size: 20px;">Belum Layak</strong>
+        </div>
+      </div>
+
+      <div class="dashboard-layout">
+        <div class="card">
+          <div class="section-title">
+            <div>
+              <h2 id="welcomeTitle">Dashboard Mahasiswa</h2>
+              <p id="welcomeSubtitle">Progress kehadiran seminar magang.</p>
+            </div>
+            <span class="badge badge-primary" id="nimBadge">NIM</span>
+          </div>
+
+          <div class="progress-wrap">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+          <p class="small" id="progressText" style="margin-top: 10px;">0 dari 10 kehadiran valid.</p>
+
+          <div class="notice warn" style="margin-top: 18px;">
+            Presensi GPS membutuhkan izin lokasi dari browser. Untuk uji coba lokal, lokasi mungkin perlu diuji langsung dari HP.
+          </div>
+
+          <div class="section-title" style="margin-top: 26px;">
+            <div>
+              <h2>Jadwal Seminar</h2>
+              <p>Pilih seminar teman, lalu lakukan presensi GPS.</p>
+            </div>
+          </div>
+          <div id="seminarList" class="seminar-list"></div>
+        </div>
+
+        <aside class="card">
+          <div class="section-title">
+            <div>
+              <h2>Riwayat Presensi</h2>
+              <p>Data tersimpan sementara di browser.</p>
+            </div>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    MVP GitHub Pages. Validasi final sebaiknya dipindahkan ke Google Apps Script atau backend agar tidak mudah dimanipulasi dari browser.
+  </footer>
+
+  <script>
+    const CONFIG = {
+      minimumValidAttendance: 10,
+      maxAccuracyMeter: 100,
+      appsScriptUrl: "" // Isi dengan URL Google Apps Script Web App pada tahap berikutnya.
+    };
+
+    const MAHASISWA = [
+      { nim: "202301001", nama: "Ahmad Rizki", angkatan: "2023", email: "ahmad@mail.com", role: "mahasiswa", status: "aktif" },
+      { nim: "202301002", nama: "Siti Aminah", angkatan: "2023", email: "siti@mail.com", role: "mahasiswa", status: "aktif" },
+      { nim: "202301003", nama: "Dimas Pratama", angkatan: "2023", email: "dimas@mail.com", role: "mahasiswa", status: "aktif" },
+      { nim: "202301010", nama: "Budi Santoso", angkatan: "2023", email: "budi@mail.com", role: "mahasiswa", status: "aktif" }
+    ];
+
+    const SEMINAR = [
+      {
+        seminar_id: "SMG001",
+        nim_presenter: "202301010",
+        nama_presenter: "Budi Santoso",
+        judul: "Sistem Informasi Presensi Magang Berbasis Web",
+        tanggal: "2026-05-25",
+        jam_mulai: "08:00",
+        jam_selesai: "23:59",
+        ruang: "Lab TI",
+        latitude: -7.810000,
+        longitude: 110.320000,
+        radius_meter: 75,
+        status: "aktif"
+      },
+      {
+        seminar_id: "SMG002",
+        nim_presenter: "202301002",
+        nama_presenter: "Siti Aminah",
+        judul: "Dashboard Monitoring Kegiatan Magang Mahasiswa",
+        tanggal: "2026-05-28",
+        jam_mulai: "09:00",
+        jam_selesai: "10:00",
+        ruang: "Ruang Sidang Prodi",
+        latitude: -7.811000,
+        longitude: 110.321000,
+        radius_meter: 50,
+        status: "aktif"
+      },
+      {
+        seminar_id: "SMG003",
+        nim_presenter: "202301003",
+        nama_presenter: "Dimas Pratama",
+        judul: "Aplikasi Inventory Barang Berbasis Mobile",
+        tanggal: "2026-05-29",
+        jam_mulai: "13:00",
+        jam_selesai: "14:00",
+        ruang: "Lab Komputer 2",
+        latitude: -7.812000,
+        longitude: 110.322000,
+        radius_meter: 50,
+        status: "aktif"
+      }
+    ];
+
+    let currentUser = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    function getStoredPresensi() {
+      return JSON.parse(localStorage.getItem("presensiSeminarMagang") || "[]");
+    }
+
+    function setStoredPresensi(data) {
+      localStorage.setItem("presensiSeminarMagang", JSON.stringify(data));
+    }
+
+    function toRad(value) {
+      return value * Math.PI / 180;
+    }
+
+    function calculateDistanceMeter(lat1, lon1, lat2, lon2) {
+      const R = 6371000;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return Math.round(R * c);
+    }
+
+    function formatDateTime(value) {
+      return new Intl.DateTimeFormat("id-ID", {
+        dateStyle: "medium",
+        timeStyle: "short"
+      }).format(new Date(value));
+    }
+
+    function isWithinSchedule(seminar) {
+      const now = new Date();
+      const start = new Date(`${seminar.tanggal}T${seminar.jam_mulai}:00`);
+      const end = new Date(`${seminar.tanggal}T${seminar.jam_selesai}:00`);
+      return now >= start && now <= end;
+    }
+
+    function getStatusBadge(status) {
+      if (status === "Valid") return `<span class="badge badge-success">Valid</span>`;
+      if (status === "Perlu Validasi") return `<span class="badge badge-warning">Perlu Validasi</span>`;
+      return `<span class="badge badge-danger">Ditolak</span>`;
+    }
+
+    function login() {
+      const nim = $("nimInput").value.trim();
+      const user = MAHASISWA.find((item) => item.nim === nim && item.status === "aktif");
+      if (!user) {
+        alert("NIM tidak ditemukan atau status mahasiswa tidak aktif.");
+        return;
+      }
+      currentUser = user;
+      localStorage.setItem("currentNim", currentUser.nim);
+      showDashboard();
+    }
+
+    function logout() {
+      currentUser = null;
+      localStorage.removeItem("currentNim");
+      $("dashboardView").classList.add("hidden");
+      $("loginView").classList.remove("hidden");
+      $("btnLogout").classList.add("hidden");
+      $("btnExport").classList.add("hidden");
+    }
+
+    function showDashboard() {
+      $("loginView").classList.add("hidden");
+      $("dashboardView").classList.remove("hidden");
+      $("btnLogout").classList.remove("hidden");
+      $("btnExport").classList.remove("hidden");
+      renderDashboard();
+    }
+
+    function renderDashboard() {
+      if (!currentUser) return;
+      const presensi = getStoredPresensi().filter((item) => item.nim_peserta === currentUser.nim);
+      const validCount = presensi.filter((item) => item.status_validasi === "Valid").length;
+      const sisa = Math.max(CONFIG.minimumValidAttendance - validCount, 0);
+      const isEligible = validCount >= CONFIG.minimumValidAttendance;
+      const percent = Math.min((validCount / CONFIG.minimumValidAttendance) * 100, 100);
+
+      $("welcomeTitle").textContent = `Halo, ${currentUser.nama}`;
+      $("welcomeSubtitle").textContent = `Angkatan ${currentUser.angkatan} • ${currentUser.email}`;
+      $("nimBadge").textContent = currentUser.nim;
+      $("statValid").textContent = validCount;
+      $("statSisa").textContent = sisa;
+      $("statTotal").textContent = presensi.length;
+      $("statStatus").textContent = isEligible ? "Layak" : "Belum Layak";
+      $("statStatus").style.color = isEligible ? "var(--success)" : "var(--warning)";
+      $("progressBar").style.width = `${percent}%`;
+      $("progressText").textContent = `${validCount} dari ${CONFIG.minimumValidAttendance} kehadiran valid. ${isEligible ? "Mahasiswa sudah layak mengajukan seminar magang." : `Masih kurang ${sisa} kehadiran.`}`;
+
+      renderSeminars();
+      renderHistory();
+    }
+
+    function renderSeminars() {
+      const presensi = getStoredPresensi().filter((item) => item.nim_peserta === currentUser.nim);
+      $("seminarList").innerHTML = SEMINAR.map((seminar) => {
+        const alreadyPresent = presensi.some((item) => item.seminar_id === seminar.seminar_id);
+        const isOwnSeminar = seminar.nim_presenter === currentUser.nim;
+        const scheduleText = `${seminar.tanggal} • ${seminar.jam_mulai}-${seminar.jam_selesai}`;
+        const disabled = alreadyPresent || isOwnSeminar || seminar.status !== "aktif";
+        const reason = alreadyPresent ? "Sudah Presensi" : isOwnSeminar ? "Seminar Sendiri" : seminar.status !== "aktif" ? "Tidak Aktif" : "Presensi GPS";
+        const badge = isWithinSchedule(seminar) ? `<span class="badge badge-success">Sedang Dibuka</span>` : `<span class="badge badge-warning">Di Luar Jam</span>`;
+
+        return `
+          <article class="seminar-item">
+            <div class="seminar-head">
+              <div>
+                <h3>${seminar.judul}</h3>
+                <p class="small">Presenter: ${seminar.nama_presenter} (${seminar.nim_presenter})</p>
+              </div>
+              ${badge}
+            </div>
+            <div class="meta">
+              <span>📅 ${scheduleText}</span>
+              <span>📍 ${seminar.ruang}</span>
+              <span>🎯 Radius ${seminar.radius_meter} m</span>
+            </div>
+            <div class="button-row">
+              <button class="${disabled ? "btn-light" : "btn-primary"}" ${disabled ? "disabled" : ""} onclick="presensiSeminar('${seminar.seminar_id}')">${reason}</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderHistory() {
+      const presensi = getStoredPresensi()
+        .filter((item) => item.nim_peserta === currentUser.nim)
+        .sort((a, b) => new Date(b.waktu_scan) - new Date(a.waktu_scan));
+
+      if (presensi.length === 0) {
+        $("historyList").innerHTML = `<div class="notice">Belum ada riwayat presensi.</div>`;
+        return;
+      }
+
+      $("historyList").innerHTML = presensi.map((item) => {
+        const seminar = SEMINAR.find((s) => s.seminar_id === item.seminar_id);
+        return `
+          <div class="history-item">
+            <div>${getStatusBadge(item.status_validasi)}</div>
+            <strong>${seminar ? seminar.judul : item.seminar_id}</strong>
+            <p class="small">
+              Waktu: ${formatDateTime(item.waktu_scan)}<br />
+              Jarak: ${item.jarak_meter} m • Akurasi GPS: ${Math.round(item.accuracy)} m<br />
+              Catatan: ${item.catatan}
+            </p>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function presensiSeminar(seminarId) {
+      const seminar = SEMINAR.find((item) => item.seminar_id === seminarId);
+      if (!seminar || !currentUser) return;
+
+      const allPresensi = getStoredPresensi();
+      const duplicate = allPresensi.some((item) => item.seminar_id === seminarId && item.nim_peserta === currentUser.nim);
+      if (duplicate) {
+        alert("Anda sudah melakukan presensi pada seminar ini.");
+        return;
+      }
+
+      if (seminar.nim_presenter === currentUser.nim) {
+        alert("Presensi tidak dapat dihitung pada seminar milik sendiri.");
+        return;
+      }
+
+      if (!navigator.geolocation) {
+        alert("Browser tidak mendukung Geolocation API.");
+        return;
+      }
+
+      const confirmPresence = confirm("Browser akan meminta izin lokasi. Lanjutkan presensi GPS?");
+      if (!confirmPresence) return;
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+          const accuracy = position.coords.accuracy;
+          const distance = calculateDistanceMeter(latitude, longitude, seminar.latitude, seminar.longitude);
+          const withinRadius = distance <= seminar.radius_meter;
+          const withinTime = isWithinSchedule(seminar);
+          const goodAccuracy = accuracy <= CONFIG.maxAccuracyMeter;
+
+          let status = "Valid";
+          let catatan = "Sesuai lokasi, waktu, dan akurasi GPS.";
+
+          if (!withinTime) {
+            status = "Ditolak";
+            catatan = "Presensi dilakukan di luar jadwal seminar.";
+          } else if (!withinRadius) {
+            status = "Ditolak";
+            catatan = `Di luar radius lokasi seminar. Jarak terdeteksi ${distance} meter.`;
+          } else if (!goodAccuracy) {
+            status = "Perlu Validasi";
+            catatan = `Akurasi GPS rendah (${Math.round(accuracy)} meter), perlu validasi admin.`;
+          }
+
+          const payload = {
+            presensi_id: `PRS-${Date.now()}`,
+            seminar_id: seminar.seminar_id,
+            nim_peserta: currentUser.nim,
+            nama_peserta: currentUser.nama,
+            waktu_scan: new Date().toISOString(),
+            latitude,
+            longitude,
+            accuracy,
+            jarak_meter: distance,
+            status_validasi: status,
+            catatan
+          };
+
+          allPresensi.push(payload);
+          setStoredPresensi(allPresensi);
+          await syncToGoogleSheet(payload);
+          renderDashboard();
+          alert(`Presensi tersimpan dengan status: ${status}\n${catatan}`);
+        },
+        (error) => {
+          let message = "Gagal mengambil lokasi.";
+          if (error.code === error.PERMISSION_DENIED) message = "Izin lokasi ditolak. Presensi GPS tidak dapat dilakukan.";
+          if (error.code === error.POSITION_UNAVAILABLE) message = "Lokasi tidak tersedia. Coba aktifkan GPS atau gunakan perangkat lain.";
+          if (error.code === error.TIMEOUT) message = "Pengambilan lokasi terlalu lama. Silakan coba lagi.";
+          alert(message);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0
+        }
+      );
+    }
+
+    async function syncToGoogleSheet(payload) {
+      if (!CONFIG.appsScriptUrl) return;
+      try {
+        await fetch(CONFIG.appsScriptUrl, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (error) {
+        console.warn("Sinkronisasi ke Google Sheets gagal:", error);
+      }
+    }
+
+    function exportCsv() {
+      const rows = getStoredPresensi();
+      if (rows.length === 0) {
+        alert("Belum ada data presensi untuk diekspor.");
+        return;
+      }
+      const headers = Object.keys(rows[0]);
+      const csv = [
+        headers.join(","),
+        ...rows.map((row) => headers.map((key) => `"${String(row[key] ?? "").replaceAll('"', '""')}"`).join(","))
+      ].join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "presensi-seminar-magang.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    $("btnLogin").addEventListener("click", login);
+    $("btnLogout").addEventListener("click", logout);
+    $("btnExport").addEventListener("click", exportCsv);
+    $("btnFillDemo").addEventListener("click", () => {
+      $("nimInput").value = "202301001";
+    });
+    $("nimInput").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") login();
+    });
+
+    const savedNim = localStorage.getItem("currentNim");
+    if (savedNim) {
+      const user = MAHASISWA.find((item) => item.nim === savedNim);
+      if (user) {
+        currentUser = user;
+        showDashboard();
+      }
+    }
+  </script>
+</body>
+</html>
