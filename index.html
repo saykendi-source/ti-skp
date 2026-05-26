@@ -558,15 +558,16 @@
 
     let currentUser = null;
     let isDataLoaded = false;
+    let PRESENSI = [];
 
     const $ = (id) => document.getElementById(id);
 
     function getStoredPresensi() {
-      return JSON.parse(localStorage.getItem("presensiSeminarMagang") || "[]");
+      return Array.isArray(PRESENSI) ? PRESENSI : [];
     }
 
     function setStoredPresensi(data) {
-      localStorage.setItem("presensiSeminarMagang", JSON.stringify(data));
+      PRESENSI = Array.isArray(data) ? data : [];
     }
 
     function toRad(value) {
@@ -669,7 +670,21 @@ Pastikan NIM ada di Sheet Mahasiswa dan status bernilai aktif.`);
             latitude: Number(item.latitude || 0),
             longitude: Number(item.longitude || 0),
             radius_meter: Number(item.radius_meter || 50),
-            status: item.status || "aktif"
+            status: normalizeText(item.status || "aktif")
+          }));
+
+          PRESENSI = (response.data.presensi || []).map((item) => ({
+            presensi_id: item.presensi_id || "",
+            seminar_id: String(item.seminar_id || "").trim(),
+            nim_peserta: normalizeNim(item.nim_peserta),
+            nama_peserta: item.nama_peserta || "",
+            waktu_scan: item.waktu_scan || "",
+            latitude: Number(item.latitude || 0),
+            longitude: Number(item.longitude || 0),
+            accuracy: Number(item.accuracy || 0),
+            jarak_meter: Number(item.jarak_meter || 0),
+            status_validasi: item.status_validasi || "",
+            catatan: item.catatan || ""
           }));
 
           isDataLoaded = true;
@@ -739,7 +754,7 @@ Pastikan NIM ada di Sheet Mahasiswa dan status bernilai aktif.`);
       const percent = Math.min((validCount / CONFIG.minimumValidAttendance) * 100, 100);
 
       $("welcomeTitle").textContent = `Halo, ${currentUser.nama}`;
-      $("welcomeSubtitle").textContent = `Angkatan ${currentUser.angkatan} • ${currentUser.email}`;
+      $("welcomeSubtitle").textContent = `Angkatan ${currentUser.angkatan || "-"} • Kelas ${currentUser.kelas || "-"}`;
       $("nimBadge").textContent = currentUser.nim;
       $("statValid").textContent = validCount;
       $("statSisa").textContent = sisa;
@@ -816,7 +831,7 @@ Pastikan NIM ada di Sheet Mahasiswa dan status bernilai aktif.`);
       if (!seminar || !currentUser) return;
 
       const allPresensi = getStoredPresensi();
-      const duplicate = allPresensi.some((item) => item.seminar_id === seminarId && item.nim_peserta === currentUser.nim);
+      const duplicate = allPresensi.some((item) => item.seminar_id === seminarId && normalizeNim(item.nim_peserta) === normalizeNim(currentUser.nim));
       if (duplicate) {
         alert("Anda sudah melakukan presensi pada seminar ini.");
         return;
