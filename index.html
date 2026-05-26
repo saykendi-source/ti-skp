@@ -501,7 +501,7 @@
     const CONFIG = {
       minimumValidAttendance: 10,
       maxAccuracyMeter: 100,
-      appsScriptUrl: "https://script.google.com/macros/s/AKfycbzm-NzZngMUgYGOC6Xd95yY4AIvmkRvlEAYY50xf0_HiN8mEUA4ZhHV0jMcnd2eAJEW9w/exec" // Isi dengan URL Google Apps Script Web App pada tahap berikutnya.
+      appsScriptUrl: "" // Isi dengan URL Google Apps Script Web App pada tahap berikutnya.
     };
 
     let MAHASISWA = [
@@ -605,12 +605,29 @@
       return `<span class="badge badge-danger">Ditolak</span>`;
     }
 
+    function normalizeText(value) {
+      return String(value || "").trim().toLowerCase();
+    }
+
+    function normalizeNim(value) {
+      return String(value || "").trim().replace(/\.0$/, "");
+    }
+
+    function isActiveStatus(value) {
+      const status = normalizeText(value);
+      return status === "" || status === "aktif" || status === "active";
+    }
+
     async function login() {
       await ensureDataLoaded();
-      const nim = $("nimInput").value.trim();
-      const user = MAHASISWA.find((item) => item.nim === nim && item.status === "aktif");
+      const nim = normalizeNim($("nimInput").value);
+      const user = MAHASISWA.find((item) => normalizeNim(item.nim) === nim && isActiveStatus(item.status));
       if (!user) {
-        alert("NIM tidak ditemukan atau status mahasiswa tidak aktif.");
+        const jumlahData = Array.isArray(MAHASISWA) ? MAHASISWA.length : 0;
+        alert(`NIM tidak ditemukan atau status mahasiswa tidak aktif.
+
+Data mahasiswa terbaca: ${jumlahData}
+Pastikan NIM ada di Sheet Mahasiswa dan status bernilai aktif.`);
         return;
       }
       currentUser = user;
@@ -631,18 +648,18 @@
           }
 
           MAHASISWA = (response.data.mahasiswa || []).map((item) => ({
-            nim: String(item.nim || "").trim(),
+            nim: normalizeNim(item.nim),
             nama: item.nama || "",
             angkatan: item.angkatan || "",
             kelas: item.kelas || "",
             role: item.role || "mahasiswa",
-            status: item.status || "aktif",
+            status: normalizeText(item.status || "aktif"),
             kode_akses: item.kode_akses || ""
           }));
 
           SEMINAR = (response.data.seminar || []).map((item) => ({
             seminar_id: String(item.seminar_id || "").trim(),
-            nim_presenter: String(item.nim_presenter || "").trim(),
+            nim_presenter: normalizeNim(item.nim_presenter),
             nama_presenter: item.nama_presenter || "",
             judul: item.judul || "",
             tanggal: item.tanggal || "",
@@ -933,7 +950,7 @@
     loadDataFromSpreadsheet().then(() => {
       const savedNim = localStorage.getItem("currentNim");
       if (savedNim) {
-        const user = MAHASISWA.find((item) => item.nim === savedNim);
+        const user = MAHASISWA.find((item) => normalizeNim(item.nim) === normalizeNim(savedNim) && isActiveStatus(item.status));
         if (user) {
           currentUser = user;
           showDashboard();
