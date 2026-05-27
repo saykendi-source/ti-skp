@@ -52,11 +52,7 @@
       gap: 16px;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .brand { display: flex; align-items: center; gap: 12px; }
 
     .logo {
       width: 44px;
@@ -68,20 +64,13 @@
       font-weight: 800;
       background: linear-gradient(135deg, #2563eb, #7c3aed);
       box-shadow: 0 12px 28px rgba(37, 99, 235, 0.22);
+      flex-shrink: 0;
     }
 
     h1, h2, h3, p { margin: 0; }
 
-    .brand h1 {
-      font-size: 18px;
-      line-height: 1.2;
-    }
-
-    .brand p {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 3px;
-    }
+    .brand h1 { font-size: 18px; line-height: 1.2; }
+    .brand p { font-size: 13px; color: var(--muted); margin-top: 3px; }
 
     main {
       max-width: 1180px;
@@ -209,10 +198,12 @@
       box-shadow: 0 12px 22px rgba(37, 99, 235, 0.22);
     }
 
-    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
     .btn-light { background: #f1f5f9; color: #0f172a; }
-    .btn-light:hover { background: #e2e8f0; }
+    .btn-light:hover:not(:disabled) { background: #e2e8f0; }
+    .btn-light:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .btn-danger { background: var(--soft-danger); color: var(--danger); }
     .btn-success { background: var(--soft-success); color: var(--success); }
@@ -250,10 +241,7 @@
       margin-bottom: 8px;
     }
 
-    .stat-card strong {
-      font-size: 30px;
-      line-height: 1;
-    }
+    .stat-card strong { font-size: 30px; line-height: 1; }
 
     .progress-wrap {
       background: #e5e7eb;
@@ -282,10 +270,7 @@
     .section-title h2 { font-size: 20px; }
     .section-title p { font-size: 13px; color: var(--muted); margin-top: 3px; }
 
-    .seminar-list, .history-list {
-      display: grid;
-      gap: 12px;
-    }
+    .seminar-list, .history-list { display: grid; gap: 12px; }
 
     .seminar-item, .history-item {
       border: 1px solid var(--line);
@@ -358,8 +343,84 @@
 
     .notice.warn { border-left-color: var(--warning); background: #fffbeb; color: #92400e; }
     .notice.danger { border-left-color: var(--danger); background: #fef2f2; color: #991b1b; }
+    .notice.success { border-left-color: var(--success); background: #f0fdf4; color: #166534; }
 
     .small { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+    /* ── Toast notification ── */
+    #toastContainer {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .toast {
+      pointer-events: all;
+      background: #1e293b;
+      color: #f8fafc;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 14px;
+      max-width: 340px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      animation: slideIn 0.25s ease;
+      line-height: 1.5;
+    }
+
+    .toast.success { background: #166534; }
+    .toast.warning { background: #92400e; }
+    .toast.danger  { background: #991b1b; }
+
+    .toast-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to   { opacity: 0; transform: translateY(8px); }
+    }
+
+    /* ── Loading spinner ── */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Sync status indicator ── */
+    .sync-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .sync-dot.pending { background: var(--warning); animation: pulse 1.2s ease infinite; }
+    .sync-dot.error   { background: var(--danger); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
 
     footer {
       max-width: 1180px;
@@ -381,597 +442,840 @@
       .seminar-head { flex-direction: column; }
       button, .btn { width: 100%; }
       main { padding-inline: 14px; }
+      #toastContainer { left: 14px; right: 14px; bottom: 16px; }
+      .toast { max-width: 100%; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="topbar">
-      <div class="brand">
-        <div class="logo">SM</div>
-        <div>
-          <h1>Presensi Seminar Magang</h1>
-          <p>QR/GPS-ready MVP untuk GitHub Pages</p>
-        </div>
-      </div>
-      <div class="button-row" id="headerActions">
-        <button class="btn-light hidden" id="btnExport">Export CSV</button>
-        <button class="btn-danger hidden" id="btnLogout">Keluar</button>
+
+<!-- Toast container -->
+<div id="toastContainer" role="status" aria-live="polite" aria-atomic="false"></div>
+
+<header>
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">SM</div>
+      <div>
+        <h1>Presensi Seminar Magang</h1>
+        <p>QR/GPS-ready MVP untuk GitHub Pages</p>
       </div>
     </div>
-  </header>
+    <div class="button-row" id="headerActions">
+      <span id="syncStatus" class="hidden" style="font-size:13px;color:var(--muted);display:inline-flex;align-items:center;align-self:center;"></span>
+      <button class="btn-light hidden" id="btnExport">Export CSV</button>
+      <button class="btn-danger hidden" id="btnLogout">Keluar</button>
+    </div>
+  </div>
+</header>
 
-  <main>
-    <section id="loginView" class="grid">
-      <div class="card login-card">
-        <h2>Masuk Mahasiswa</h2>
-        <p class="small" style="margin-top: 8px;">Gunakan NIM contoh di bawah untuk mencoba aplikasi. Pada tahap berikutnya, data NIM akan dibaca dari Google Sheets.</p>
+<main>
+  <!-- ── LOGIN ── -->
+  <section id="loginView" class="grid">
+    <div class="card login-card">
+      <h2>Masuk Mahasiswa</h2>
+      <p class="small" style="margin-top:8px;">Gunakan NIM contoh di bawah untuk mencoba aplikasi. Pada tahap berikutnya, data NIM akan dibaca dari Google Sheets.</p>
 
-        <label for="nimInput">NIM</label>
-        <input id="nimInput" type="text" placeholder="Contoh: 202301001" autocomplete="off" />
+      <label for="nimInput">NIM</label>
+      <input id="nimInput" type="text" placeholder="Contoh: 202301001" autocomplete="off" />
 
-        <div class="button-row">
-          <button class="btn-primary" id="btnLogin">Masuk Dashboard</button>
-          <button class="btn-light" id="btnFillDemo">Isi NIM Demo</button>
-        </div>
-
-        <div class="notice">
-          <strong>NIM demo:</strong> 202301001, 202301002, 202301003. Data ini masih contoh dan tersimpan di browser.
-        </div>
+      <div class="button-row">
+        <button class="btn-primary" id="btnLogin">Masuk Dashboard</button>
+        <button class="btn-light" id="btnFillDemo">Isi NIM Demo</button>
       </div>
 
-      <div class="card info-card">
-        <h2 class="hero-title">Validasi 10 kehadiran seminar magang dengan GPS.</h2>
-        <p>Mahasiswa dapat melihat jadwal seminar, melakukan presensi dengan lokasi, dan memantau kelayakan sebelum mengajukan seminar magang.</p>
-        <div class="hero-list">
-          <div class="hero-item">✅ Minimal 10 kehadiran valid sebelum seminar magang.</div>
-          <div class="hero-item">📍 GPS geofencing untuk memastikan mahasiswa berada di lokasi seminar.</div>
-          <div class="hero-item">🕒 Validasi waktu agar presensi hanya dilakukan saat seminar berlangsung.</div>
-          <div class="hero-item">🚫 Mahasiswa tidak dapat menghitung kehadiran pada seminar miliknya sendiri.</div>
-        </div>
-      </div>
-    </section>
-
-    <section id="dashboardView" class="hidden">
-      <div class="stats">
-        <div class="stat-card">
-          <span>Kehadiran Valid</span>
-          <strong id="statValid">0</strong>
-        </div>
-        <div class="stat-card">
-          <span>Sisa Kehadiran</span>
-          <strong id="statSisa">10</strong>
-        </div>
-        <div class="stat-card">
-          <span>Total Presensi</span>
-          <strong id="statTotal">0</strong>
-        </div>
-        <div class="stat-card">
-          <span>Status</span>
-          <strong id="statStatus" style="font-size: 20px;">Belum Layak</strong>
-        </div>
+      <div class="notice">
+        <strong>NIM demo:</strong> 202301001, 202301002, 202301003. Data ini masih contoh dan tersimpan di browser.
       </div>
 
-      <div class="dashboard-layout">
-        <div class="card">
-          <div class="section-title">
-            <div>
-              <h2 id="welcomeTitle">Dashboard Mahasiswa</h2>
-              <p id="welcomeSubtitle">Progress kehadiran seminar magang.</p>
-            </div>
-            <span class="badge badge-primary" id="nimBadge">NIM</span>
-          </div>
+      <div class="notice warn" style="margin-top:10px;">
+        ⚠️ MVP ini menggunakan validasi sisi klien sebagai fallback. Pindahkan validasi koordinat &amp; waktu ke Google Apps Script untuk produksi.
+      </div>
+    </div>
 
-          <div class="progress-wrap">
-            <div class="progress-bar" id="progressBar"></div>
-          </div>
-          <p class="small" id="progressText" style="margin-top: 10px;">0 dari 10 kehadiran valid.</p>
+    <div class="card info-card">
+      <h2 class="hero-title">Validasi 10 kehadiran seminar magang dengan GPS.</h2>
+      <p>Mahasiswa dapat melihat jadwal seminar, melakukan presensi dengan lokasi, dan memantau kelayakan sebelum mengajukan seminar magang.</p>
+      <div class="hero-list">
+        <div class="hero-item">✅ Minimal 10 kehadiran valid sebelum seminar magang.</div>
+        <div class="hero-item">📍 GPS geofencing untuk memastikan mahasiswa berada di lokasi seminar.</div>
+        <div class="hero-item">🕒 Validasi waktu agar presensi hanya dilakukan saat seminar berlangsung.</div>
+        <div class="hero-item">🚫 Mahasiswa tidak dapat menghitung kehadiran pada seminar miliknya sendiri.</div>
+      </div>
+    </div>
+  </section>
 
-          <div class="notice warn" style="margin-top: 18px;">
-            Presensi GPS membutuhkan izin lokasi dari browser. Untuk uji coba lokal, lokasi mungkin perlu diuji langsung dari HP.
-          </div>
+  <!-- ── DASHBOARD ── -->
+  <section id="dashboardView" class="hidden" aria-live="polite">
+    <div class="stats">
+      <div class="stat-card">
+        <span>Kehadiran Valid</span>
+        <strong id="statValid">0</strong>
+      </div>
+      <div class="stat-card">
+        <span>Sisa Kehadiran</span>
+        <strong id="statSisa">10</strong>
+      </div>
+      <div class="stat-card">
+        <span>Total Presensi</span>
+        <strong id="statTotal">0</strong>
+      </div>
+      <div class="stat-card">
+        <span>Status</span>
+        <strong id="statStatus" style="font-size:20px;">Belum Layak</strong>
+      </div>
+    </div>
 
-          <div class="section-title" style="margin-top: 26px;">
-            <div>
-              <h2>Jadwal Seminar</h2>
-              <p>Pilih seminar teman, lalu lakukan presensi GPS.</p>
-            </div>
+    <div class="dashboard-layout">
+      <div class="card">
+        <div class="section-title">
+          <div>
+            <h2 id="welcomeTitle">Dashboard Mahasiswa</h2>
+            <p id="welcomeSubtitle">Progress kehadiran seminar magang.</p>
           </div>
-          <div id="seminarList" class="seminar-list"></div>
+          <span class="badge badge-primary" id="nimBadge">NIM</span>
         </div>
 
-        <aside class="card">
-          <div class="section-title">
-            <div>
-              <h2>Riwayat Presensi</h2>
-              <p>Data tersimpan sementara di browser.</p>
-            </div>
+        <div class="progress-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="10" id="progressWrap">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <p class="small" id="progressText" style="margin-top:10px;">0 dari 10 kehadiran valid.</p>
+
+        <div class="notice warn" style="margin-top:18px;">
+          Presensi GPS membutuhkan izin lokasi dari browser. Untuk uji coba lokal, lokasi mungkin perlu diuji langsung dari HP.
+        </div>
+
+        <div class="section-title" style="margin-top:26px;">
+          <div>
+            <h2>Jadwal Seminar</h2>
+            <p>Pilih seminar teman, lalu lakukan presensi GPS.</p>
           </div>
-          <div id="historyList" class="history-list"></div>
-        </aside>
+        </div>
+        <div id="seminarList" class="seminar-list" aria-label="Daftar jadwal seminar"></div>
       </div>
-    </section>
-  </main>
 
-  <footer>
-    MVP GitHub Pages. Validasi final sebaiknya dipindahkan ke Google Apps Script atau backend agar tidak mudah dimanipulasi dari browser.
-  </footer>
+      <aside class="card">
+        <div class="section-title">
+          <div>
+            <h2>Riwayat Presensi</h2>
+            <p id="syncNote">Data disinkronkan ke Google Sheets.</p>
+          </div>
+        </div>
 
-  <script>
-    const CONFIG = {
-      minimumValidAttendance: 10,
-      maxAccuracyMeter: 100,
-      appsScriptUrl: "https://script.google.com/macros/s/AKfycbzm-NzZngMUgYGOC6Xd95yY4AIvmkRvlEAYY50xf0_HiN8mEUA4ZhHV0jMcnd2eAJEW9w/exec" // Isi dengan URL Google Apps Script Web App pada tahap berikutnya.
-    };
+        <!-- Antrian gagal sinkronisasi -->
+        <div id="retryBanner" class="notice danger hidden">
+          ⚠️ Ada <span id="retryCount">0</span> presensi yang belum tersinkronisasi.
+          <button class="btn-warning" style="margin-top:10px;width:100%;" id="btnRetrySync">Coba Sinkronisasi Ulang</button>
+        </div>
 
-    let MAHASISWA = [
-      { nim: "202301001", nama: "Ahmad Rizki", angkatan: "2023", email: "ahmad@mail.com", role: "mahasiswa", status: "aktif" },
-      { nim: "202301002", nama: "Siti Aminah", angkatan: "2023", email: "siti@mail.com", role: "mahasiswa", status: "aktif" },
-      { nim: "202301003", nama: "Dimas Pratama", angkatan: "2023", email: "dimas@mail.com", role: "mahasiswa", status: "aktif" },
-      { nim: "202301010", nama: "Budi Santoso", angkatan: "2023", email: "budi@mail.com", role: "mahasiswa", status: "aktif" }
-    ];
+        <div id="historyList" class="history-list" aria-label="Riwayat presensi saya"></div>
+      </aside>
+    </div>
+  </section>
+</main>
 
-    let SEMINAR = [
-      {
-        seminar_id: "SMG001",
-        nim_presenter: "202301010",
-        nama_presenter: "Budi Santoso",
-        judul: "Sistem Informasi Presensi Magang Berbasis Web",
-        tanggal: "2026-05-25",
-        jam_mulai: "08:00",
-        jam_selesai: "23:59",
-        ruang: "Lab TI",
-        latitude: -7.810000,
-        longitude: 110.320000,
-        radius_meter: 75,
-        status: "aktif"
-      },
-      {
-        seminar_id: "SMG002",
-        nim_presenter: "202301002",
-        nama_presenter: "Siti Aminah",
-        judul: "Dashboard Monitoring Kegiatan Magang Mahasiswa",
-        tanggal: "2026-05-28",
-        jam_mulai: "09:00",
-        jam_selesai: "10:00",
-        ruang: "Ruang Sidang Prodi",
-        latitude: -7.811000,
-        longitude: 110.321000,
-        radius_meter: 50,
-        status: "aktif"
-      },
-      {
-        seminar_id: "SMG003",
-        nim_presenter: "202301003",
-        nama_presenter: "Dimas Pratama",
-        judul: "Aplikasi Inventory Barang Berbasis Mobile",
-        tanggal: "2026-05-29",
-        jam_mulai: "13:00",
-        jam_selesai: "14:00",
-        ruang: "Lab Komputer 2",
-        latitude: -7.812000,
-        longitude: 110.322000,
-        radius_meter: 50,
-        status: "aktif"
+<footer>
+  MVP GitHub Pages. Validasi final sebaiknya dipindahkan ke Google Apps Script atau backend agar tidak mudah dimanipulasi dari browser.
+</footer>
+
+<script>
+/* ─────────────────────────────────────────────
+   KONFIGURASI
+───────────────────────────────────────────── */
+const CONFIG = {
+  minimumValidAttendance: 10,
+  maxAccuracyMeter: 100,
+  // Isi URL Google Apps Script Web App Anda:
+  appsScriptUrl: "https://script.google.com/macros/s/AKfycbzm-NzZngMUgYGOC6Xd95yY4AIvmkRvlEAYY50xf0_HiN8mEUA4ZhHV0jMcnd2eAJEW9w/exec",
+  localStorageKey: "presensiSeminarData",
+  retryQueueKey: "presensiRetryQueue",
+  retryIntervalMs: 30000, // coba ulang tiap 30 detik
+};
+
+/* ─────────────────────────────────────────────
+   DATA DEMO (fallback jika Apps Script belum terpasang)
+───────────────────────────────────────────── */
+let MAHASISWA = [
+  { nim: "202301001", nama: "Ahmad Rizki",    angkatan: "2023", kelas: "A", email: "ahmad@mail.com", role: "mahasiswa", status: "aktif" },
+  { nim: "202301002", nama: "Siti Aminah",    angkatan: "2023", kelas: "A", email: "siti@mail.com",  role: "mahasiswa", status: "aktif" },
+  { nim: "202301003", nama: "Dimas Pratama",  angkatan: "2023", kelas: "B", email: "dimas@mail.com", role: "mahasiswa", status: "aktif" },
+  { nim: "202301010", nama: "Budi Santoso",   angkatan: "2023", kelas: "B", email: "budi@mail.com",  role: "mahasiswa", status: "aktif" }
+];
+
+let SEMINAR = [
+  {
+    seminar_id: "SMG001", nim_presenter: "202301010", nama_presenter: "Budi Santoso",
+    judul: "Sistem Informasi Presensi Magang Berbasis Web",
+    tanggal: "2026-05-25", jam_mulai: "08:00", jam_selesai: "23:59",
+    ruang: "Lab TI", latitude: -7.810000, longitude: 110.320000, radius_meter: 75, status: "aktif"
+  },
+  {
+    seminar_id: "SMG002", nim_presenter: "202301002", nama_presenter: "Siti Aminah",
+    judul: "Dashboard Monitoring Kegiatan Magang Mahasiswa",
+    tanggal: "2026-05-28", jam_mulai: "09:00", jam_selesai: "10:00",
+    ruang: "Ruang Sidang Prodi", latitude: -7.811000, longitude: 110.321000, radius_meter: 50, status: "aktif"
+  },
+  {
+    seminar_id: "SMG003", nim_presenter: "202301003", nama_presenter: "Dimas Pratama",
+    judul: "Aplikasi Inventory Barang Berbasis Mobile",
+    tanggal: "2026-05-29", jam_mulai: "13:00", jam_selesai: "14:00",
+    ruang: "Lab Komputer 2", latitude: -7.812000, longitude: 110.322000, radius_meter: 50, status: "aktif"
+  }
+];
+
+/* ─────────────────────────────────────────────
+   STATE
+───────────────────────────────────────────── */
+let currentUser = null;
+let isDataLoaded = false;
+let loadingPromise = null;   // FIX: cegah race condition ganda
+let isPresensiBusy = false;  // FIX: cegah double-tap GPS
+let retryTimer = null;
+
+const $ = (id) => document.getElementById(id);
+
+/* ─────────────────────────────────────────────
+   TOAST (menggantikan alert())
+───────────────────────────────────────────── */
+function showToast(message, type = "info", durationMs = 4000) {
+  const icons = { info: "ℹ️", success: "✅", warning: "⚠️", danger: "❌" };
+  const container = $("toastContainer");
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.setAttribute("role", "alert");
+
+  const icon = document.createElement("span");
+  icon.className = "toast-icon";
+  icon.textContent = icons[type] || "ℹ️";
+  icon.setAttribute("aria-hidden", "true");
+
+  const text = document.createElement("span");
+  text.textContent = message;
+
+  toast.appendChild(icon);
+  toast.appendChild(text);
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.animation = "fadeOut 0.3s ease forwards";
+    setTimeout(() => toast.remove(), 300);
+  }, durationMs);
+}
+
+/* ─────────────────────────────────────────────
+   SANITASI HTML (FIX: cegah XSS dari data Sheets)
+───────────────────────────────────────────── */
+function escapeHtml(str) {
+  const el = document.createElement("div");
+  el.textContent = String(str ?? "");
+  return el.innerHTML;
+}
+
+/* ─────────────────────────────────────────────
+   LOCAL STORAGE — buffer presensi
+───────────────────────────────────────────── */
+function getStoredPresensi() {
+  try {
+    const raw = localStorage.getItem(CONFIG.localStorageKey);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function setStoredPresensi(data) {
+  try {
+    localStorage.setItem(CONFIG.localStorageKey, JSON.stringify(data));
+  } catch (e) {
+    console.warn("localStorage penuh atau tidak tersedia:", e);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   ANTRIAN RETRY (FIX: sinkronisasi gagal)
+───────────────────────────────────────────── */
+function getRetryQueue() {
+  try {
+    const raw = localStorage.getItem(CONFIG.retryQueueKey);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function setRetryQueue(queue) {
+  try {
+    localStorage.setItem(CONFIG.retryQueueKey, JSON.stringify(queue));
+  } catch (e) {
+    console.warn("Gagal menyimpan antrian retry:", e);
+  }
+}
+
+function addToRetryQueue(payload) {
+  const queue = getRetryQueue();
+  if (!queue.find((item) => item.presensi_id === payload.presensi_id)) {
+    queue.push(payload);
+    setRetryQueue(queue);
+  }
+  updateRetryBanner();
+}
+
+function removeFromRetryQueue(presensiId) {
+  const queue = getRetryQueue().filter((item) => item.presensi_id !== presensiId);
+  setRetryQueue(queue);
+  updateRetryBanner();
+}
+
+function updateRetryBanner() {
+  const queue = getRetryQueue();
+  const banner = $("retryBanner");
+  const count  = $("retryCount");
+  if (!banner) return;
+  if (queue.length > 0) {
+    count.textContent = queue.length;
+    banner.classList.remove("hidden");
+  } else {
+    banner.classList.add("hidden");
+  }
+}
+
+function updateSyncStatus(state) {
+  const el = $("syncStatus");
+  if (!el) return;
+  if (state === "synced") {
+    el.innerHTML = `<span class="sync-dot"></span> Tersinkronisasi`;
+    el.classList.remove("hidden");
+  } else if (state === "pending") {
+    el.innerHTML = `<span class="sync-dot pending"></span> Menyinkronkan…`;
+    el.classList.remove("hidden");
+  } else if (state === "error") {
+    el.innerHTML = `<span class="sync-dot error"></span> Sinkronisasi gagal`;
+    el.classList.remove("hidden");
+  } else {
+    el.classList.add("hidden");
+  }
+}
+
+async function processRetryQueue() {
+  const queue = getRetryQueue();
+  if (queue.length === 0) return;
+  updateSyncStatus("pending");
+  for (const payload of [...queue]) {
+    const ok = await syncToGoogleSheet(payload, false);
+    if (ok) removeFromRetryQueue(payload.presensi_id);
+  }
+  updateSyncStatus(getRetryQueue().length > 0 ? "error" : "synced");
+}
+
+function startRetryTimer() {
+  if (retryTimer) return;
+  retryTimer = setInterval(processRetryQueue, CONFIG.retryIntervalMs);
+}
+
+/* ─────────────────────────────────────────────
+   UTILS
+───────────────────────────────────────────── */
+function toRad(v) { return v * Math.PI / 180; }
+
+function calculateDistanceMeter(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+function formatDateTime(value) {
+  return new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+}
+
+/*
+ * FIX: isWithinSchedule menerima parameter opsional `now` untuk testing,
+ * tapi pada produksi waktu server dari Apps Script yang seharusnya dipakai.
+ * Catatan: validasi waktu FINAL dilakukan di sisi Apps Script agar
+ * user tidak bisa memalsukan waktu dengan mengubah jam perangkat.
+ */
+function isWithinSchedule(seminar, now = new Date()) {
+  const start = new Date(`${seminar.tanggal}T${seminar.jam_mulai}:00`);
+  const end   = new Date(`${seminar.tanggal}T${seminar.jam_selesai}:00`);
+  return now >= start && now <= end;
+}
+
+function getStatusBadge(status) {
+  if (status === "Valid")          return `<span class="badge badge-success" aria-label="Status valid">✅ Valid</span>`;
+  if (status === "Perlu Validasi") return `<span class="badge badge-warning" aria-label="Perlu validasi admin">⏳ Perlu Validasi</span>`;
+  return `<span class="badge badge-danger" aria-label="Status ditolak">❌ Ditolak</span>`;
+}
+
+function normalizeText(v) { return String(v ?? "").trim().toLowerCase(); }
+function normalizeNim(v)  { return String(v ?? "").trim().replace(/\.0$/, ""); }
+function isActiveStatus(v) {
+  const s = normalizeText(v);
+  return s === "" || s === "aktif" || s === "active";
+}
+
+/* ─────────────────────────────────────────────
+   LOAD DATA DARI APPS SCRIPT
+   FIX: promise disimpan agar tidak dijalankan 2x (race condition)
+───────────────────────────────────────────── */
+function loadDataFromSpreadsheet() {
+  if (!CONFIG.appsScriptUrl) {
+    isDataLoaded = true;
+    return Promise.resolve({ status: "demo" });
+  }
+
+  return jsonpRequest(CONFIG.appsScriptUrl, { action: "getInitialData" })
+    .then((response) => {
+      if (response.status !== "success") throw new Error(response.message || "Gagal membaca data");
+
+      MAHASISWA = (response.data.mahasiswa || []).map((item) => ({
+        nim: normalizeNim(item.nim), nama: item.nama || "",
+        angkatan: item.angkatan || "", kelas: item.kelas || "",
+        role: item.role || "mahasiswa",
+        status: normalizeText(item.status || "aktif"),
+        kode_akses: item.kode_akses || ""
+      }));
+
+      SEMINAR = (response.data.seminar || []).map((item) => ({
+        seminar_id: String(item.seminar_id || "").trim(),
+        nim_presenter: normalizeNim(item.nim_presenter),
+        nama_presenter: item.nama_presenter || "",
+        judul: item.judul || "",
+        tanggal: item.tanggal || "",
+        jam_mulai: item.jam_mulai || "00:00",
+        jam_selesai: item.jam_selesai || "23:59",
+        ruang: item.ruang || "",
+        latitude: Number(item.latitude || 0),
+        longitude: Number(item.longitude || 0),
+        radius_meter: Number(item.radius_meter || 50),
+        status: normalizeText(item.status || "aktif")
+      }));
+
+      /*
+       * FIX: Data presensi dari server MENGGABUNGKAN dengan localStorage,
+       * tidak menimpa — agar presensi yang belum terkirim tidak hilang.
+       */
+      const serverPresensi = (response.data.presensi || []).map((item) => ({
+        presensi_id: item.presensi_id || "",
+        seminar_id: String(item.seminar_id || "").trim(),
+        nim_peserta: normalizeNim(item.nim_peserta),
+        nama_peserta: item.nama_peserta || "",
+        waktu_scan: item.waktu_scan || "",
+        latitude: Number(item.latitude || 0),
+        longitude: Number(item.longitude || 0),
+        accuracy: Number(item.accuracy || 0),
+        jarak_meter: Number(item.jarak_meter || 0),
+        status_validasi: item.status_validasi || "",
+        catatan: item.catatan || ""
+      }));
+
+      const localPresensi  = getStoredPresensi();
+      const serverIds      = new Set(serverPresensi.map((p) => p.presensi_id));
+      const localOnlyItems = localPresensi.filter((p) => !serverIds.has(p.presensi_id));
+      setStoredPresensi([...serverPresensi, ...localOnlyItems]);
+
+      isDataLoaded = true;
+      return response;
+    })
+    .catch((error) => {
+      console.warn("Gagal membaca spreadsheet, memakai data demo:", error);
+      isDataLoaded = true;
+      return { status: "fallback", message: error.message };
+    });
+}
+
+/* FIX: simpan promise agar tidak ada 2 request bersamaan */
+function ensureDataLoaded() {
+  if (isDataLoaded) return Promise.resolve();
+  if (!loadingPromise) loadingPromise = loadDataFromSpreadsheet();
+  return loadingPromise;
+}
+
+function jsonpRequest(url, params = {}) {
+  return new Promise((resolve, reject) => {
+    const callbackName = `jsonpCb_${Date.now()}_${Math.round(Math.random() * 1e6)}`;
+    const script = document.createElement("script");
+    const query  = new URLSearchParams({ ...params, callback: callbackName });
+
+    window[callbackName] = (data) => { cleanup(); resolve(data); };
+
+    function cleanup() {
+      delete window[callbackName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    script.onerror = () => { cleanup(); reject(new Error("Gagal memuat data dari Apps Script")); };
+    script.src = `${url}?${query.toString()}`;
+    document.body.appendChild(script);
+  });
+}
+
+/* ─────────────────────────────────────────────
+   AUTH
+───────────────────────────────────────────── */
+async function login() {
+  const btn = $("btnLogin");
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span> Memuat…`;
+
+  await ensureDataLoaded();
+
+  const nim  = normalizeNim($("nimInput").value);
+  const user = MAHASISWA.find((item) => normalizeNim(item.nim) === nim && isActiveStatus(item.status));
+
+  btn.disabled = false;
+  btn.textContent = "Masuk Dashboard";
+
+  if (!user) {
+    showToast(
+      `NIM "${escapeHtml(nim)}" tidak ditemukan atau status tidak aktif. (${MAHASISWA.length} data terbaca)`,
+      "danger", 6000
+    );
+    return;
+  }
+
+  currentUser = user;
+  localStorage.setItem("currentNim", currentUser.nim);
+  showDashboard();
+}
+
+function logout() {
+  currentUser = null;
+  localStorage.removeItem("currentNim");
+  if (retryTimer) { clearInterval(retryTimer); retryTimer = null; }
+  $("dashboardView").classList.add("hidden");
+  $("loginView").classList.remove("hidden");
+  $("btnLogout").classList.add("hidden");
+  $("btnExport").classList.add("hidden");
+  $("syncStatus").classList.add("hidden");
+}
+
+function showDashboard() {
+  $("loginView").classList.add("hidden");
+  $("dashboardView").classList.remove("hidden");
+  $("btnLogout").classList.remove("hidden");
+  $("btnExport").classList.remove("hidden");
+  renderDashboard();
+  updateRetryBanner();
+  startRetryTimer();
+  if (getRetryQueue().length > 0) processRetryQueue();
+}
+
+/* ─────────────────────────────────────────────
+   RENDER DASHBOARD
+───────────────────────────────────────────── */
+function renderDashboard() {
+  if (!currentUser) return;
+  const presensi    = getStoredPresensi().filter((item) => item.nim_peserta === currentUser.nim);
+  const validCount  = presensi.filter((item) => item.status_validasi === "Valid").length;
+  const sisa        = Math.max(CONFIG.minimumValidAttendance - validCount, 0);
+  const isEligible  = validCount >= CONFIG.minimumValidAttendance;
+  const percent     = Math.min((validCount / CONFIG.minimumValidAttendance) * 100, 100);
+
+  $("welcomeTitle").textContent    = `Halo, ${currentUser.nama}`;
+  $("welcomeSubtitle").textContent = `Angkatan ${currentUser.angkatan || "-"} • Kelas ${currentUser.kelas || "-"}`;
+  $("nimBadge").textContent        = currentUser.nim;
+  $("statValid").textContent       = validCount;
+  $("statSisa").textContent        = sisa;
+  $("statTotal").textContent       = presensi.length;
+  $("statStatus").textContent      = isEligible ? "Layak ✅" : "Belum Layak";
+  $("statStatus").style.color      = isEligible ? "var(--success)" : "var(--warning)";
+  $("progressBar").style.width     = `${percent}%`;
+  $("progressWrap").setAttribute("aria-valuenow", validCount);
+  $("progressText").textContent    = `${validCount} dari ${CONFIG.minimumValidAttendance} kehadiran valid. ${
+    isEligible ? "Mahasiswa sudah layak mengajukan seminar magang." : `Masih kurang ${sisa} kehadiran.`
+  }`;
+
+  renderSeminars();
+  renderHistory();
+}
+
+function renderSeminars() {
+  const presensi = getStoredPresensi().filter((item) => item.nim_peserta === currentUser.nim);
+  const container = $("seminarList");
+  container.innerHTML = "";
+
+  SEMINAR.forEach((seminar) => {
+    const alreadyPresent = presensi.some((item) => item.seminar_id === seminar.seminar_id);
+    const isOwnSeminar   = seminar.nim_presenter === currentUser.nim;
+    const isInactive     = seminar.status !== "aktif";
+    const disabled       = alreadyPresent || isOwnSeminar || isInactive;
+
+    const btnLabel = alreadyPresent ? "Sudah Presensi"
+      : isOwnSeminar ? "Seminar Sendiri"
+      : isInactive   ? "Tidak Aktif"
+      : "Presensi GPS";
+
+    const scheduleOpen = isWithinSchedule(seminar);
+
+    const article = document.createElement("article");
+    article.className = "seminar-item";
+
+    /* FIX: semua teks di-escape agar tidak ada XSS dari data Sheets */
+    const headDiv = document.createElement("div");
+    headDiv.className = "seminar-head";
+
+    const titleWrap = document.createElement("div");
+    const h3 = document.createElement("h3");
+    h3.textContent = seminar.judul;
+    const presenterP = document.createElement("p");
+    presenterP.className = "small";
+    presenterP.textContent = `Presenter: ${seminar.nama_presenter} (${seminar.nim_presenter})`;
+    titleWrap.appendChild(h3);
+    titleWrap.appendChild(presenterP);
+
+    const scheduleBadge = document.createElement("span");
+    scheduleBadge.className = scheduleOpen ? "badge badge-success" : "badge badge-warning";
+    scheduleBadge.textContent = scheduleOpen ? "Sedang Dibuka" : "Di Luar Jam";
+
+    headDiv.appendChild(titleWrap);
+    headDiv.appendChild(scheduleBadge);
+
+    const metaDiv = document.createElement("div");
+    metaDiv.className = "meta";
+    metaDiv.innerHTML = `
+      <span>📅 ${escapeHtml(seminar.tanggal)} • ${escapeHtml(seminar.jam_mulai)}–${escapeHtml(seminar.jam_selesai)}</span>
+      <span>📍 ${escapeHtml(seminar.ruang)}</span>
+      <span>🎯 Radius ${escapeHtml(seminar.radius_meter)} m</span>
+    `;
+
+    const btnRow = document.createElement("div");
+    btnRow.className = "button-row";
+    const btn = document.createElement("button");
+    btn.className = disabled ? "btn-light" : "btn-primary";
+    btn.textContent = btnLabel;
+    btn.disabled = disabled;
+    btn.setAttribute("aria-label", `${btnLabel}: ${seminar.judul}`);
+    if (!disabled) btn.addEventListener("click", () => presensiSeminar(seminar.seminar_id));
+    btnRow.appendChild(btn);
+
+    article.appendChild(headDiv);
+    article.appendChild(metaDiv);
+    article.appendChild(btnRow);
+    container.appendChild(article);
+  });
+}
+
+function renderHistory() {
+  const presensi = getStoredPresensi()
+    .filter((item) => item.nim_peserta === currentUser.nim)
+    .sort((a, b) => new Date(b.waktu_scan) - new Date(a.waktu_scan));
+
+  const container = $("historyList");
+  container.innerHTML = "";
+
+  if (presensi.length === 0) {
+    const notice = document.createElement("div");
+    notice.className = "notice";
+    notice.textContent = "Belum ada riwayat presensi.";
+    container.appendChild(notice);
+    return;
+  }
+
+  presensi.forEach((item) => {
+    const seminar = SEMINAR.find((s) => s.seminar_id === item.seminar_id);
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.innerHTML = `
+      ${getStatusBadge(item.status_validasi)}
+      <strong>${escapeHtml(seminar ? seminar.judul : item.seminar_id)}</strong>
+      <p class="small">
+        Waktu: ${escapeHtml(formatDateTime(item.waktu_scan))}<br>
+        Jarak: ${escapeHtml(item.jarak_meter)} m • Akurasi GPS: ${Math.round(item.accuracy)} m<br>
+        Catatan: ${escapeHtml(item.catatan)}
+      </p>
+    `;
+    container.appendChild(div);
+  });
+}
+
+/* ─────────────────────────────────────────────
+   PRESENSI GPS
+   FIX: loading state, cegah double-tap, validasi duplikat diperkuat
+───────────────────────────────────────────── */
+async function presensiSeminar(seminarId) {
+  if (isPresensiBusy) {
+    showToast("Sedang memproses presensi sebelumnya, harap tunggu.", "warning");
+    return;
+  }
+
+  const seminar = SEMINAR.find((item) => item.seminar_id === seminarId);
+  if (!seminar || !currentUser) return;
+
+  const allPresensi = getStoredPresensi();
+  const isDuplicate = allPresensi.some(
+    (item) => item.seminar_id === seminarId && normalizeNim(item.nim_peserta) === normalizeNim(currentUser.nim)
+  );
+  if (isDuplicate) { showToast("Anda sudah melakukan presensi pada seminar ini.", "warning"); return; }
+  if (seminar.nim_presenter === currentUser.nim) { showToast("Presensi tidak dapat dihitung pada seminar milik sendiri.", "warning"); return; }
+  if (!navigator.geolocation) { showToast("Browser tidak mendukung Geolocation API.", "danger"); return; }
+
+  /* Konfirmasi sebelum minta izin lokasi */
+  if (!confirm("Browser akan meminta izin lokasi. Lanjutkan presensi GPS?")) return;
+
+  /* Tandai busy & tampilkan loading pada tombol */
+  isPresensiBusy = true;
+  const btnEl = document.querySelector(`[aria-label*="${seminar.judul}"]`);
+  let originalLabel = "";
+  if (btnEl) {
+    originalLabel = btnEl.textContent;
+    btnEl.disabled = true;
+    btnEl.innerHTML = `<span class="spinner"></span> Mengambil lokasi…`;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const { latitude, longitude, accuracy } = position.coords;
+      const distance    = calculateDistanceMeter(latitude, longitude, seminar.latitude, seminar.longitude);
+      const withinRadius = distance <= seminar.radius_meter;
+      const withinTime   = isWithinSchedule(seminar);
+      const goodAccuracy = accuracy <= CONFIG.maxAccuracyMeter;
+
+      /*
+       * CATATAN KEAMANAN:
+       * Penetapan status di sini hanya untuk UX sementara (lokal).
+       * Validasi FINAL (termasuk pengecekan waktu server) harus dilakukan
+       * oleh Google Apps Script di sisi server sebelum menyimpan ke Sheets.
+       * Status dari Apps Script yang menjadi acuan keabsahan presensi.
+       */
+      let status  = "Valid";
+      let catatan = "Sesuai lokasi, waktu, dan akurasi GPS.";
+
+      if (!withinTime) {
+        status  = "Ditolak";
+        catatan = "Presensi dilakukan di luar jadwal seminar.";
+      } else if (!withinRadius) {
+        status  = "Ditolak";
+        catatan = `Di luar radius lokasi seminar. Jarak terdeteksi ${distance} meter.`;
+      } else if (!goodAccuracy) {
+        status  = "Perlu Validasi";
+        catatan = `Akurasi GPS rendah (${Math.round(accuracy)} meter), perlu validasi admin.`;
       }
-    ];
 
-    let currentUser = null;
-    let isDataLoaded = false;
-    let PRESENSI = [];
+      const payload = {
+        presensi_id:    `PRS-${Date.now()}-${Math.round(Math.random() * 1e4)}`,
+        seminar_id:     seminar.seminar_id,
+        nim_peserta:    currentUser.nim,
+        nama_peserta:   currentUser.nama,
+        waktu_scan:     new Date().toISOString(),
+        latitude, longitude, accuracy,
+        jarak_meter:    distance,
+        status_validasi: status,
+        catatan
+      };
 
-    const $ = (id) => document.getElementById(id);
+      /* FIX: simpan ke localStorage dulu, baru sinkronkan */
+      allPresensi.push(payload);
+      setStoredPresensi(allPresensi);
 
-    function getStoredPresensi() {
-      return Array.isArray(PRESENSI) ? PRESENSI : [];
-    }
+      isPresensiBusy = false;
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = originalLabel; }
 
-    function setStoredPresensi(data) {
-      PRESENSI = Array.isArray(data) ? data : [];
-    }
-
-    function toRad(value) {
-      return value * Math.PI / 180;
-    }
-
-    function calculateDistanceMeter(lat1, lon1, lat2, lon2) {
-      const R = 6371000;
-      const dLat = toRad(lat2 - lat1);
-      const dLon = toRad(lon2 - lon1);
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return Math.round(R * c);
-    }
-
-    function formatDateTime(value) {
-      return new Intl.DateTimeFormat("id-ID", {
-        dateStyle: "medium",
-        timeStyle: "short"
-      }).format(new Date(value));
-    }
-
-    function isWithinSchedule(seminar) {
-      const now = new Date();
-      const start = new Date(`${seminar.tanggal}T${seminar.jam_mulai}:00`);
-      const end = new Date(`${seminar.tanggal}T${seminar.jam_selesai}:00`);
-      return now >= start && now <= end;
-    }
-
-    function getStatusBadge(status) {
-      if (status === "Valid") return `<span class="badge badge-success">Valid</span>`;
-      if (status === "Perlu Validasi") return `<span class="badge badge-warning">Perlu Validasi</span>`;
-      return `<span class="badge badge-danger">Ditolak</span>`;
-    }
-
-    function normalizeText(value) {
-      return String(value || "").trim().toLowerCase();
-    }
-
-    function normalizeNim(value) {
-      return String(value || "").trim().replace(/\.0$/, "");
-    }
-
-    function isActiveStatus(value) {
-      const status = normalizeText(value);
-      return status === "" || status === "aktif" || status === "active";
-    }
-
-    async function login() {
-      await ensureDataLoaded();
-      const nim = normalizeNim($("nimInput").value);
-      const user = MAHASISWA.find((item) => normalizeNim(item.nim) === nim && isActiveStatus(item.status));
-      if (!user) {
-        const jumlahData = Array.isArray(MAHASISWA) ? MAHASISWA.length : 0;
-        alert(`NIM tidak ditemukan atau status mahasiswa tidak aktif.
-
-Data mahasiswa terbaca: ${jumlahData}
-Pastikan NIM ada di Sheet Mahasiswa dan status bernilai aktif.`);
-        return;
-      }
-      currentUser = user;
-      localStorage.setItem("currentNim", currentUser.nim);
-      showDashboard();
-    }
-
-    function loadDataFromSpreadsheet() {
-      if (!CONFIG.appsScriptUrl) {
-        isDataLoaded = true;
-        return Promise.resolve({ status: "demo", message: "Menggunakan data demo di index.html" });
-      }
-
-      return jsonpRequest(CONFIG.appsScriptUrl, { action: "getInitialData" })
-        .then((response) => {
-          if (response.status !== "success") {
-            throw new Error(response.message || "Gagal membaca data spreadsheet");
-          }
-
-          MAHASISWA = (response.data.mahasiswa || []).map((item) => ({
-            nim: normalizeNim(item.nim),
-            nama: item.nama || "",
-            angkatan: item.angkatan || "",
-            kelas: item.kelas || "",
-            role: item.role || "mahasiswa",
-            status: normalizeText(item.status || "aktif"),
-            kode_akses: item.kode_akses || ""
-          }));
-
-          SEMINAR = (response.data.seminar || []).map((item) => ({
-            seminar_id: String(item.seminar_id || "").trim(),
-            nim_presenter: normalizeNim(item.nim_presenter),
-            nama_presenter: item.nama_presenter || "",
-            judul: item.judul || "",
-            tanggal: item.tanggal || "",
-            jam_mulai: item.jam_mulai || "00:00",
-            jam_selesai: item.jam_selesai || "23:59",
-            ruang: item.ruang || "",
-            latitude: Number(item.latitude || 0),
-            longitude: Number(item.longitude || 0),
-            radius_meter: Number(item.radius_meter || 50),
-            status: normalizeText(item.status || "aktif")
-          }));
-
-          PRESENSI = (response.data.presensi || []).map((item) => ({
-            presensi_id: item.presensi_id || "",
-            seminar_id: String(item.seminar_id || "").trim(),
-            nim_peserta: normalizeNim(item.nim_peserta),
-            nama_peserta: item.nama_peserta || "",
-            waktu_scan: item.waktu_scan || "",
-            latitude: Number(item.latitude || 0),
-            longitude: Number(item.longitude || 0),
-            accuracy: Number(item.accuracy || 0),
-            jarak_meter: Number(item.jarak_meter || 0),
-            status_validasi: item.status_validasi || "",
-            catatan: item.catatan || ""
-          }));
-
-          isDataLoaded = true;
-          return response;
-        })
-        .catch((error) => {
-          console.warn("Gagal membaca spreadsheet, memakai data demo:", error);
-          isDataLoaded = true;
-          return { status: "fallback", message: error.message };
-        });
-    }
-
-    function ensureDataLoaded() {
-      if (isDataLoaded) return Promise.resolve();
-      return loadDataFromSpreadsheet();
-    }
-
-    function jsonpRequest(url, params = {}) {
-      return new Promise((resolve, reject) => {
-        const callbackName = `jsonpCallback_${Date.now()}_${Math.round(Math.random() * 100000)}`;
-        const script = document.createElement("script");
-        const query = new URLSearchParams({ ...params, callback: callbackName });
-
-        window[callbackName] = (data) => {
-          cleanup();
-          resolve(data);
-        };
-
-        function cleanup() {
-          delete window[callbackName];
-          if (script.parentNode) script.parentNode.removeChild(script);
-        }
-
-        script.onerror = () => {
-          cleanup();
-          reject(new Error("Gagal memuat data dari Apps Script"));
-        };
-
-        script.src = `${url}?${query.toString()}`;
-        document.body.appendChild(script);
-      });
-    }
-
-    function logout() {
-      currentUser = null;
-      localStorage.removeItem("currentNim");
-      $("dashboardView").classList.add("hidden");
-      $("loginView").classList.remove("hidden");
-      $("btnLogout").classList.add("hidden");
-      $("btnExport").classList.add("hidden");
-    }
-
-    function showDashboard() {
-      $("loginView").classList.add("hidden");
-      $("dashboardView").classList.remove("hidden");
-      $("btnLogout").classList.remove("hidden");
-      $("btnExport").classList.remove("hidden");
       renderDashboard();
-    }
 
-    function renderDashboard() {
-      if (!currentUser) return;
-      const presensi = getStoredPresensi().filter((item) => item.nim_peserta === currentUser.nim);
-      const validCount = presensi.filter((item) => item.status_validasi === "Valid").length;
-      const sisa = Math.max(CONFIG.minimumValidAttendance - validCount, 0);
-      const isEligible = validCount >= CONFIG.minimumValidAttendance;
-      const percent = Math.min((validCount / CONFIG.minimumValidAttendance) * 100, 100);
+      const toastType = status === "Valid" ? "success" : status === "Perlu Validasi" ? "warning" : "danger";
+      showToast(`Presensi tersimpan: ${status} — ${catatan}`, toastType, 6000);
 
-      $("welcomeTitle").textContent = `Halo, ${currentUser.nama}`;
-      $("welcomeSubtitle").textContent = `Angkatan ${currentUser.angkatan || "-"} • Kelas ${currentUser.kelas || "-"}`;
-      $("nimBadge").textContent = currentUser.nim;
-      $("statValid").textContent = validCount;
-      $("statSisa").textContent = sisa;
-      $("statTotal").textContent = presensi.length;
-      $("statStatus").textContent = isEligible ? "Layak" : "Belum Layak";
-      $("statStatus").style.color = isEligible ? "var(--success)" : "var(--warning)";
-      $("progressBar").style.width = `${percent}%`;
-      $("progressText").textContent = `${validCount} dari ${CONFIG.minimumValidAttendance} kehadiran valid. ${isEligible ? "Mahasiswa sudah layak mengajukan seminar magang." : `Masih kurang ${sisa} kehadiran.`}`;
-
-      renderSeminars();
-      renderHistory();
-    }
-
-    function renderSeminars() {
-      const presensi = getStoredPresensi().filter((item) => item.nim_peserta === currentUser.nim);
-      $("seminarList").innerHTML = SEMINAR.map((seminar) => {
-        const alreadyPresent = presensi.some((item) => item.seminar_id === seminar.seminar_id);
-        const isOwnSeminar = seminar.nim_presenter === currentUser.nim;
-        const scheduleText = `${seminar.tanggal} • ${seminar.jam_mulai}-${seminar.jam_selesai}`;
-        const disabled = alreadyPresent || isOwnSeminar || seminar.status !== "aktif";
-        const reason = alreadyPresent ? "Sudah Presensi" : isOwnSeminar ? "Seminar Sendiri" : seminar.status !== "aktif" ? "Tidak Aktif" : "Presensi GPS";
-        const badge = isWithinSchedule(seminar) ? `<span class="badge badge-success">Sedang Dibuka</span>` : `<span class="badge badge-warning">Di Luar Jam</span>`;
-
-        return `
-          <article class="seminar-item">
-            <div class="seminar-head">
-              <div>
-                <h3>${seminar.judul}</h3>
-                <p class="small">Presenter: ${seminar.nama_presenter} (${seminar.nim_presenter})</p>
-              </div>
-              ${badge}
-            </div>
-            <div class="meta">
-              <span>📅 ${scheduleText}</span>
-              <span>📍 ${seminar.ruang}</span>
-              <span>🎯 Radius ${seminar.radius_meter} m</span>
-            </div>
-            <div class="button-row">
-              <button class="${disabled ? "btn-light" : "btn-primary"}" ${disabled ? "disabled" : ""} onclick="presensiSeminar('${seminar.seminar_id}')">${reason}</button>
-            </div>
-          </article>
-        `;
-      }).join("");
-    }
-
-    function renderHistory() {
-      const presensi = getStoredPresensi()
-        .filter((item) => item.nim_peserta === currentUser.nim)
-        .sort((a, b) => new Date(b.waktu_scan) - new Date(a.waktu_scan));
-
-      if (presensi.length === 0) {
-        $("historyList").innerHTML = `<div class="notice">Belum ada riwayat presensi.</div>`;
-        return;
+      /* Sinkronisasi ke Google Sheets */
+      updateSyncStatus("pending");
+      const ok = await syncToGoogleSheet(payload);
+      if (!ok) {
+        addToRetryQueue(payload);
+        updateSyncStatus("error");
+        showToast("Presensi tersimpan lokal. Sinkronisasi ke Sheets akan dicoba ulang otomatis.", "warning", 5000);
+      } else {
+        removeFromRetryQueue(payload.presensi_id);
+        updateSyncStatus("synced");
       }
+    },
+    (error) => {
+      isPresensiBusy = false;
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = originalLabel; }
 
-      $("historyList").innerHTML = presensi.map((item) => {
-        const seminar = SEMINAR.find((s) => s.seminar_id === item.seminar_id);
-        return `
-          <div class="history-item">
-            <div>${getStatusBadge(item.status_validasi)}</div>
-            <strong>${seminar ? seminar.judul : item.seminar_id}</strong>
-            <p class="small">
-              Waktu: ${formatDateTime(item.waktu_scan)}<br />
-              Jarak: ${item.jarak_meter} m • Akurasi GPS: ${Math.round(item.accuracy)} m<br />
-              Catatan: ${item.catatan}
-            </p>
-          </div>
-        `;
-      }).join("");
-    }
+      const messages = {
+        [error.PERMISSION_DENIED]:    "Izin lokasi ditolak. Presensi GPS tidak dapat dilakukan.",
+        [error.POSITION_UNAVAILABLE]: "Lokasi tidak tersedia. Coba aktifkan GPS atau gunakan perangkat lain.",
+        [error.TIMEOUT]:              "Pengambilan lokasi terlalu lama. Silakan coba lagi.",
+      };
+      showToast(messages[error.code] || "Gagal mengambil lokasi.", "danger", 6000);
+    },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+  );
+}
 
-    async function presensiSeminar(seminarId) {
-      const seminar = SEMINAR.find((item) => item.seminar_id === seminarId);
-      if (!seminar || !currentUser) return;
+/* ─────────────────────────────────────────────
+   SINKRONISASI KE GOOGLE SHEETS
+   FIX: mengembalikan boolean sukses/gagal + retry queue
+───────────────────────────────────────────── */
+async function syncToGoogleSheet(payload, addRetryOnFail = true) {
+  if (!CONFIG.appsScriptUrl) return true; // mode demo, anggap berhasil
 
-      const allPresensi = getStoredPresensi();
-      const duplicate = allPresensi.some((item) => item.seminar_id === seminarId && normalizeNim(item.nim_peserta) === normalizeNim(currentUser.nim));
-      if (duplicate) {
-        alert("Anda sudah melakukan presensi pada seminar ini.");
-        return;
-      }
+  const formData = new URLSearchParams();
+  formData.append("action", "savePresensi");
+  Object.keys(payload).forEach((key) => formData.append(key, String(payload[key])));
 
-      if (seminar.nim_presenter === currentUser.nim) {
-        alert("Presensi tidak dapat dihitung pada seminar milik sendiri.");
-        return;
-      }
-
-      if (!navigator.geolocation) {
-        alert("Browser tidak mendukung Geolocation API.");
-        return;
-      }
-
-      const confirmPresence = confirm("Browser akan meminta izin lokasi. Lanjutkan presensi GPS?");
-      if (!confirmPresence) return;
-
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-          const accuracy = position.coords.accuracy;
-          const distance = calculateDistanceMeter(latitude, longitude, seminar.latitude, seminar.longitude);
-          const withinRadius = distance <= seminar.radius_meter;
-          const withinTime = isWithinSchedule(seminar);
-          const goodAccuracy = accuracy <= CONFIG.maxAccuracyMeter;
-
-          let status = "Valid";
-          let catatan = "Sesuai lokasi, waktu, dan akurasi GPS.";
-
-          if (!withinTime) {
-            status = "Ditolak";
-            catatan = "Presensi dilakukan di luar jadwal seminar.";
-          } else if (!withinRadius) {
-            status = "Ditolak";
-            catatan = `Di luar radius lokasi seminar. Jarak terdeteksi ${distance} meter.`;
-          } else if (!goodAccuracy) {
-            status = "Perlu Validasi";
-            catatan = `Akurasi GPS rendah (${Math.round(accuracy)} meter), perlu validasi admin.`;
-          }
-
-          const payload = {
-            presensi_id: `PRS-${Date.now()}`,
-            seminar_id: seminar.seminar_id,
-            nim_peserta: currentUser.nim,
-            nama_peserta: currentUser.nama,
-            waktu_scan: new Date().toISOString(),
-            latitude,
-            longitude,
-            accuracy,
-            jarak_meter: distance,
-            status_validasi: status,
-            catatan
-          };
-
-          allPresensi.push(payload);
-          setStoredPresensi(allPresensi);
-          await syncToGoogleSheet(payload);
-          renderDashboard();
-          alert(`Presensi tersimpan dengan status: ${status}\n${catatan}`);
-        },
-        (error) => {
-          let message = "Gagal mengambil lokasi.";
-          if (error.code === error.PERMISSION_DENIED) message = "Izin lokasi ditolak. Presensi GPS tidak dapat dilakukan.";
-          if (error.code === error.POSITION_UNAVAILABLE) message = "Lokasi tidak tersedia. Coba aktifkan GPS atau gunakan perangkat lain.";
-          if (error.code === error.TIMEOUT) message = "Pengambilan lokasi terlalu lama. Silakan coba lagi.";
-          alert(message);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 0
-        }
-      );
-    }
-
-    async function syncToGoogleSheet(payload) {
-      if (!CONFIG.appsScriptUrl) return;
-
-      // Google Apps Script lebih stabil menerima data dari GitHub Pages
-      // dalam format application/x-www-form-urlencoded / FormData.
-      const formData = new URLSearchParams();
-      formData.append("action", "savePresensi");
-      Object.keys(payload).forEach((key) => {
-        formData.append(key, payload[key]);
-      });
-
-      try {
-        await fetch(CONFIG.appsScriptUrl, {
-          method: "POST",
-          mode: "no-cors",
-          body: formData
-        });
-      } catch (error) {
-        console.warn("Sinkronisasi ke Google Sheets gagal:", error);
-      }
-    }
-
-    function exportCsv() {
-      const rows = getStoredPresensi();
-      if (rows.length === 0) {
-        alert("Belum ada data presensi untuk diekspor.");
-        return;
-      }
-      const headers = Object.keys(rows[0]);
-      const csv = [
-        headers.join(","),
-        ...rows.map((row) => headers.map((key) => `"${String(row[key] ?? "").replaceAll('"', '""')}"`).join(","))
-      ].join("\n");
-
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "presensi-seminar-magang.csv";
-      link.click();
-      URL.revokeObjectURL(url);
-    }
-
-    $("btnLogin").addEventListener("click", login);
-    $("btnLogout").addEventListener("click", logout);
-    $("btnExport").addEventListener("click", exportCsv);
-    $("btnFillDemo").addEventListener("click", () => {
-      $("nimInput").value = "202301001";
+  try {
+    await fetch(CONFIG.appsScriptUrl, {
+      method: "POST",
+      mode: "no-cors",
+      body: formData
     });
-    $("nimInput").addEventListener("keydown", (event) => {
-      if (event.key === "Enter") login();
-    });
+    return true;
+  } catch (error) {
+    console.warn("Sinkronisasi ke Google Sheets gagal:", error);
+    return false;
+  }
+}
 
-    loadDataFromSpreadsheet().then(() => {
-      const savedNim = localStorage.getItem("currentNim");
-      if (savedNim) {
-        const user = MAHASISWA.find((item) => normalizeNim(item.nim) === normalizeNim(savedNim) && isActiveStatus(item.status));
-        if (user) {
-          currentUser = user;
-          showDashboard();
-        }
-      }
-    });
-  </script>
+/* ─────────────────────────────────────────────
+   EXPORT CSV
+───────────────────────────────────────────── */
+function exportCsv() {
+  const rows = getStoredPresensi();
+  if (rows.length === 0) { showToast("Belum ada data presensi untuk diekspor.", "warning"); return; }
+
+  const headers = Object.keys(rows[0]);
+  const csv = [
+    headers.join(","),
+    ...rows.map((row) => headers.map((key) => `"${String(row[key] ?? "").replaceAll('"', '""')}"`).join(","))
+  ].join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url  = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "presensi-seminar-magang.csv";
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ─────────────────────────────────────────────
+   EVENT LISTENERS
+───────────────────────────────────────────── */
+$("btnLogin").addEventListener("click", login);
+$("btnLogout").addEventListener("click", logout);
+$("btnExport").addEventListener("click", exportCsv);
+$("btnFillDemo").addEventListener("click", () => { $("nimInput").value = "202301001"; });
+$("nimInput").addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
+$("btnRetrySync").addEventListener("click", () => {
+  showToast("Mencoba sinkronisasi ulang…", "info");
+  processRetryQueue();
+});
+
+/* ─────────────────────────────────────────────
+   INIT — auto-login jika session tersimpan
+───────────────────────────────────────────── */
+loadDataFromSpreadsheet().then(() => {
+  const savedNim = localStorage.getItem("currentNim");
+  if (savedNim) {
+    const user = MAHASISWA.find(
+      (item) => normalizeNim(item.nim) === normalizeNim(savedNim) && isActiveStatus(item.status)
+    );
+    if (user) { currentUser = user; showDashboard(); }
+  }
+});
+</script>
 </body>
 </html>
