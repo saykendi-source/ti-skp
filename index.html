@@ -391,6 +391,47 @@
       to   { opacity: 0; transform: translateY(8px); }
     }
 
+
+    /* ── Form pengajuan & admin validation ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .form-grid .full { grid-column: 1 / -1; }
+
+    .admin-panel {
+      margin-top: 18px;
+    }
+
+    .validation-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .validation-item {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      background: #fff;
+      display: grid;
+      gap: 10px;
+    }
+
+    .validation-actions {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    @media (max-width: 720px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .validation-actions { grid-template-columns: 1fr; }
+    }
+
     /* ── Loading spinner ── */
     .spinner {
       width: 18px;
@@ -547,6 +588,59 @@
 
         <div class="section-title" style="margin-top:26px;">
           <div>
+            <h2>Pengajuan Seminar Magang</h2>
+            <p>Tombol pengajuan hanya aktif jika sudah memiliki minimal 10 kehadiran valid.</p>
+          </div>
+        </div>
+
+        <div id="submissionStatus" class="notice"></div>
+        <div class="button-row">
+          <button class="btn-primary hidden" id="btnToggleSubmitSeminar">Ajukan Seminar Magang</button>
+        </div>
+
+        <form id="seminarForm" class="hidden" style="margin-top:14px;">
+          <div class="form-grid">
+            <div class="full">
+              <label for="judulSeminarInput">Judul Seminar</label>
+              <input id="judulSeminarInput" type="text" placeholder="Contoh: Sistem Informasi Presensi Magang Berbasis Web" />
+            </div>
+            <div>
+              <label for="tanggalSeminarInput">Tanggal</label>
+              <input id="tanggalSeminarInput" type="date" />
+            </div>
+            <div>
+              <label for="ruangSeminarInput">Ruang</label>
+              <input id="ruangSeminarInput" type="text" placeholder="Contoh: Lab TI" />
+            </div>
+            <div>
+              <label for="jamMulaiSeminarInput">Jam Mulai</label>
+              <input id="jamMulaiSeminarInput" type="time" />
+            </div>
+            <div>
+              <label for="jamSelesaiSeminarInput">Jam Selesai</label>
+              <input id="jamSelesaiSeminarInput" type="time" />
+            </div>
+            <div>
+              <label for="latitudeSeminarInput">Latitude</label>
+              <input id="latitudeSeminarInput" type="number" step="any" placeholder="-7.810000" />
+            </div>
+            <div>
+              <label for="longitudeSeminarInput">Longitude</label>
+              <input id="longitudeSeminarInput" type="number" step="any" placeholder="110.320000" />
+            </div>
+            <div>
+              <label for="radiusSeminarInput">Radius Validasi GPS (meter)</label>
+              <input id="radiusSeminarInput" type="number" value="50" min="10" />
+            </div>
+          </div>
+          <div class="button-row">
+            <button type="submit" class="btn-success" id="btnSubmitSeminar">Kirim Pengajuan Seminar</button>
+            <button type="button" class="btn-light" id="btnCancelSubmitSeminar">Batal</button>
+          </div>
+        </form>
+
+        <div class="section-title" style="margin-top:26px;">
+          <div>
             <h2>Jadwal Seminar</h2>
             <p>Pilih seminar teman, lalu lakukan presensi GPS.</p>
           </div>
@@ -571,6 +665,22 @@
         <div id="historyList" class="history-list" aria-label="Riwayat presensi saya"></div>
       </aside>
     </div>
+
+    <section id="adminPanel" class="card admin-panel hidden">
+      <div class="section-title">
+        <div>
+          <h2>Validasi Presensi Peserta</h2>
+          <p>Khusus dosen/admin. Hanya presensi berstatus Valid yang dihitung sebagai syarat 10 kehadiran.</p>
+        </div>
+        <span class="badge badge-primary">Dosen/Admin</span>
+      </div>
+
+      <div class="notice warn">
+        Validasi ini digunakan untuk mengesahkan peserta seminar. Presensi GPS hanya menjadi bukti awal; dosen/admin tetap dapat menyetujui atau menolak.
+      </div>
+
+      <div id="adminValidationList" class="validation-list" style="margin-top:14px;"></div>
+    </section>
   </section>
 </main>
 
@@ -586,7 +696,7 @@ const CONFIG = {
   minimumValidAttendance: 10,
   maxAccuracyMeter: 100,
   // Isi URL Google Apps Script Web App Anda:
-  appsScriptUrl: "https://script.google.com/macros/s/AKfycbzm-NzZngMUgYGOC6Xd95yY4AIvmkRvlEAYY50xf0_HiN8mEUA4ZhHV0jMcnd2eAJEW9w/exec",
+  appsScriptUrl: "https://script.google.com/macros/s/AKfycbzvP-7HR9qAs08Oc-6OuBaz9IWD3H1YiuTPn-DNnynIbGk559DlAo4yuF6gdW7HjcUMBA/exec",
   localStorageKey: "presensiSeminarData",
   retryQueueKey: "presensiRetryQueue",
   retryIntervalMs: 30000, // coba ulang tiap 30 detik
@@ -804,8 +914,12 @@ function isWithinSchedule(seminar, now = new Date()) {
 }
 
 function getStatusBadge(status) {
-  if (status === "Valid")          return `<span class="badge badge-success" aria-label="Status valid">✅ Valid</span>`;
-  if (status === "Perlu Validasi") return `<span class="badge badge-warning" aria-label="Perlu validasi admin">⏳ Perlu Validasi</span>`;
+  const s = normalizeText(status);
+  if (s === "valid") return `<span class="badge badge-success" aria-label="Status valid">✅ Valid</span>`;
+  if (s === "perlu validasi") return `<span class="badge badge-warning" aria-label="Perlu validasi admin">⏳ Perlu Validasi</span>`;
+  if (s === "menunggu validasi") return `<span class="badge badge-warning" aria-label="Menunggu validasi">⏳ Menunggu Validasi</span>`;
+  if (s === "diajukan") return `<span class="badge badge-warning" aria-label="Diajukan">⏳ Diajukan</span>`;
+  if (s === "aktif") return `<span class="badge badge-success" aria-label="Aktif">✅ Aktif</span>`;
   return `<span class="badge badge-danger" aria-label="Status ditolak">❌ Ditolak</span>`;
 }
 
@@ -814,6 +928,11 @@ function normalizeNim(v)  { return String(v ?? "").trim().replace(/\.0$/, ""); }
 function isActiveStatus(v) {
   const s = normalizeText(v);
   return s === "" || s === "aktif" || s === "active";
+}
+
+function isAdminOrDosen() {
+  const role = normalizeText(currentUser?.role);
+  return role === "admin" || role === "dosen" || role === "dosen/admin";
 }
 
 /* ─────────────────────────────────────────────
@@ -968,8 +1087,8 @@ function showDashboard() {
 ───────────────────────────────────────────── */
 function renderDashboard() {
   if (!currentUser) return;
-  const presensi    = getStoredPresensi().filter((item) => item.nim_peserta === currentUser.nim);
-  const validCount  = presensi.filter((item) => item.status_validasi === "Valid").length;
+  const presensi    = getStoredPresensi().filter((item) => normalizeNim(item.nim_peserta) === normalizeNim(currentUser.nim));
+  const validCount  = presensi.filter((item) => normalizeText(item.status_validasi) === "valid").length;
   const sisa        = Math.max(CONFIG.minimumValidAttendance - validCount, 0);
   const isEligible  = validCount >= CONFIG.minimumValidAttendance;
   const percent     = Math.min((validCount / CONFIG.minimumValidAttendance) * 100, 100);
@@ -988,18 +1107,20 @@ function renderDashboard() {
     isEligible ? "Mahasiswa sudah layak mengajukan seminar magang." : `Masih kurang ${sisa} kehadiran.`
   }`;
 
+  renderSubmissionPanel(validCount, isEligible);
   renderSeminars();
   renderHistory();
+  renderAdminPanel();
 }
 
 function renderSeminars() {
-  const presensi = getStoredPresensi().filter((item) => item.nim_peserta === currentUser.nim);
+  const presensi = getStoredPresensi().filter((item) => normalizeNim(item.nim_peserta) === normalizeNim(currentUser.nim));
   const container = $("seminarList");
   container.innerHTML = "";
 
   SEMINAR.forEach((seminar) => {
     const alreadyPresent = presensi.some((item) => item.seminar_id === seminar.seminar_id);
-    const isOwnSeminar   = seminar.nim_presenter === currentUser.nim;
+    const isOwnSeminar   = normalizeNim(seminar.nim_presenter) === normalizeNim(currentUser.nim);
     const isInactive     = seminar.status !== "aktif";
     const disabled       = alreadyPresent || isOwnSeminar || isInactive;
 
@@ -1060,7 +1181,7 @@ function renderSeminars() {
 
 function renderHistory() {
   const presensi = getStoredPresensi()
-    .filter((item) => item.nim_peserta === currentUser.nim)
+    .filter((item) => normalizeNim(item.nim_peserta) === normalizeNim(currentUser.nim))
     .sort((a, b) => new Date(b.waktu_scan) - new Date(a.waktu_scan));
 
   const container = $("historyList");
@@ -1089,6 +1210,245 @@ function renderHistory() {
     `;
     container.appendChild(div);
   });
+}
+
+
+/* ─────────────────────────────────────────────
+   PENGAJUAN SEMINAR
+───────────────────────────────────────────── */
+function renderSubmissionPanel(validCount, isEligible) {
+  const statusBox = $("submissionStatus");
+  const btn = $("btnToggleSubmitSeminar");
+  const form = $("seminarForm");
+
+  if (!statusBox || !btn || !form) return;
+
+  if (isAdminOrDosen()) {
+    statusBox.className = "notice";
+    statusBox.textContent = "Akun dosen/admin digunakan untuk validasi presensi. Pengajuan seminar hanya untuk mahasiswa.";
+    btn.classList.add("hidden");
+    form.classList.add("hidden");
+    return;
+  }
+
+  const existingSeminar = SEMINAR.find((s) =>
+    normalizeNim(s.nim_presenter) === normalizeNim(currentUser.nim) &&
+    ["diajukan", "aktif"].includes(normalizeText(s.status))
+  );
+
+  if (existingSeminar) {
+    statusBox.className = "notice warn";
+    statusBox.textContent = `Anda sudah memiliki pengajuan/jadwal seminar dengan status "${existingSeminar.status}". Hubungi admin jika perlu perubahan jadwal.`;
+    btn.classList.add("hidden");
+    form.classList.add("hidden");
+    return;
+  }
+
+  if (!isEligible) {
+    statusBox.className = "notice danger";
+    statusBox.textContent = `Belum bisa mengajukan seminar. Kehadiran valid saat ini ${validCount}/${CONFIG.minimumValidAttendance}.`;
+    btn.classList.add("hidden");
+    form.classList.add("hidden");
+    return;
+  }
+
+  statusBox.className = "notice success";
+  statusBox.textContent = `Syarat terpenuhi. Kehadiran valid ${validCount}/${CONFIG.minimumValidAttendance}. Silakan ajukan jadwal seminar magang.`;
+  btn.classList.remove("hidden");
+}
+
+function toggleSeminarForm(show) {
+  const form = $("seminarForm");
+  if (!form) return;
+  form.classList.toggle("hidden", !show);
+}
+
+async function submitSeminar(event) {
+  event.preventDefault();
+
+  if (!currentUser) return;
+
+  const validCount = getStoredPresensi()
+    .filter((item) => normalizeNim(item.nim_peserta) === normalizeNim(currentUser.nim))
+    .filter((item) => normalizeText(item.status_validasi) === "valid").length;
+
+  if (validCount < CONFIG.minimumValidAttendance) {
+    showToast("Pengajuan belum dapat dilakukan karena kehadiran valid belum mencapai 10 kali.", "danger", 6000);
+    return;
+  }
+
+  const payload = {
+    seminar_id: `SMG-${Date.now()}`,
+    nim_presenter: currentUser.nim,
+    nama_presenter: currentUser.nama,
+    judul: $("judulSeminarInput").value.trim(),
+    tanggal: $("tanggalSeminarInput").value,
+    jam_mulai: $("jamMulaiSeminarInput").value,
+    jam_selesai: $("jamSelesaiSeminarInput").value,
+    ruang: $("ruangSeminarInput").value.trim(),
+    latitude: $("latitudeSeminarInput").value,
+    longitude: $("longitudeSeminarInput").value,
+    radius_meter: $("radiusSeminarInput").value || "50",
+    status: "diajukan"
+  };
+
+  if (!payload.judul || !payload.tanggal || !payload.jam_mulai || !payload.jam_selesai || !payload.ruang || !payload.latitude || !payload.longitude) {
+    showToast("Lengkapi seluruh data pengajuan seminar terlebih dahulu.", "warning", 6000);
+    return;
+  }
+
+  const btn = $("btnSubmitSeminar");
+  const oldText = btn.textContent;
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span> Mengirim…`;
+
+  const ok = await postToAppsScript("submitSeminar", payload);
+
+  btn.disabled = false;
+  btn.textContent = oldText;
+
+  if (!ok) {
+    showToast("Pengajuan belum berhasil dikirim ke spreadsheet. Periksa koneksi atau Apps Script.", "danger", 6000);
+    return;
+  }
+
+  SEMINAR.push(payload);
+  $("seminarForm").reset();
+  toggleSeminarForm(false);
+  renderDashboard();
+
+  showToast("Pengajuan seminar berhasil dikirim. Status awal: diajukan. Admin dapat mengubah status menjadi aktif setelah disetujui.", "success", 7000);
+}
+
+/* ─────────────────────────────────────────────
+   VALIDASI PRESENSI DOSEN / ADMIN
+───────────────────────────────────────────── */
+function renderAdminPanel() {
+  const panel = $("adminPanel");
+  const list = $("adminValidationList");
+  if (!panel || !list) return;
+
+  if (!isAdminOrDosen()) {
+    panel.classList.add("hidden");
+    return;
+  }
+
+  panel.classList.remove("hidden");
+  list.innerHTML = "";
+
+  const rows = getStoredPresensi()
+    .slice()
+    .sort((a, b) => {
+      const order = { "menunggu validasi": 0, "perlu validasi": 1, "valid": 2, "ditolak": 3 };
+      return (order[normalizeText(a.status_validasi)] ?? 9) - (order[normalizeText(b.status_validasi)] ?? 9);
+    });
+
+  if (rows.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "notice";
+    empty.textContent = "Belum ada data presensi yang perlu divalidasi.";
+    list.appendChild(empty);
+    return;
+  }
+
+  rows.forEach((p) => {
+    const seminar = SEMINAR.find((s) => s.seminar_id === p.seminar_id);
+    const mhs = MAHASISWA.find((m) => normalizeNim(m.nim) === normalizeNim(p.nim_peserta));
+    const item = document.createElement("div");
+    item.className = "validation-item";
+
+    const catatanId = `catatan-${String(p.presensi_id).replace(/[^a-zA-Z0-9_-]/g, "")}`;
+
+    item.innerHTML = `
+      <div class="seminar-head">
+        <div>
+          <h3>${escapeHtml(mhs?.nama || p.nama_peserta || p.nim_peserta)}</h3>
+          <p class="small">
+            NIM: ${escapeHtml(p.nim_peserta)}<br>
+            Seminar: ${escapeHtml(seminar?.judul || p.seminar_id)}<br>
+            Waktu scan: ${escapeHtml(p.waktu_scan ? formatDateTime(p.waktu_scan) : "-")}<br>
+            Jarak: ${escapeHtml(p.jarak_meter || "-")} m • Akurasi: ${escapeHtml(Math.round(Number(p.accuracy || 0)))} m
+          </p>
+        </div>
+        ${getStatusBadge(p.status_validasi)}
+      </div>
+      <p class="small">Catatan sistem: ${escapeHtml(p.catatan || "-")}</p>
+      <div class="validation-actions">
+        <div>
+          <label for="${catatanId}">Catatan validasi</label>
+          <input id="${catatanId}" type="text" placeholder="Opsional, contoh: Hadir sampai selesai" />
+        </div>
+        <button class="btn-success" data-action="valid">Valid</button>
+        <button class="btn-danger" data-action="ditolak">Tolak</button>
+      </div>
+    `;
+
+    const validBtn = item.querySelector('[data-action="valid"]');
+    const rejectBtn = item.querySelector('[data-action="ditolak"]');
+
+    validBtn.addEventListener("click", () => {
+      validatePresensiByAdmin(p.presensi_id, "Valid", $(catatanId).value.trim());
+    });
+
+    rejectBtn.addEventListener("click", () => {
+      validatePresensiByAdmin(p.presensi_id, "Ditolak", $(catatanId).value.trim());
+    });
+
+    list.appendChild(item);
+  });
+}
+
+async function validatePresensiByAdmin(presensiId, statusBaru, catatanValidasi = "") {
+  if (!isAdminOrDosen()) {
+    showToast("Hanya dosen/admin yang dapat memvalidasi presensi.", "danger", 6000);
+    return;
+  }
+
+  const ok = await postToAppsScript("validatePresensi", {
+    presensi_id: presensiId,
+    status_validasi: statusBaru,
+    validated_by: currentUser.nim,
+    validated_by_name: currentUser.nama,
+    catatan_validasi: catatanValidasi
+  });
+
+  if (!ok) {
+    showToast("Validasi gagal dikirim ke spreadsheet. Periksa koneksi atau Apps Script.", "danger", 6000);
+    return;
+  }
+
+  const rows = getStoredPresensi();
+  const idx = rows.findIndex((p) => p.presensi_id === presensiId);
+  if (idx !== -1) {
+    rows[idx].status_validasi = statusBaru;
+    rows[idx].validated_by = currentUser.nim;
+    rows[idx].validated_at = new Date().toISOString();
+    rows[idx].catatan_validasi = catatanValidasi;
+    setStoredPresensi(rows);
+  }
+
+  renderDashboard();
+  showToast(`Presensi berhasil diubah menjadi ${statusBaru}.`, statusBaru === "Valid" ? "success" : "warning", 5000);
+}
+
+async function postToAppsScript(action, payload) {
+  if (!CONFIG.appsScriptUrl) return true;
+
+  const formData = new URLSearchParams();
+  formData.append("action", action);
+  Object.keys(payload).forEach((key) => formData.append(key, String(payload[key] ?? "")));
+
+  try {
+    await fetch(CONFIG.appsScriptUrl, {
+      method: "POST",
+      mode: "no-cors",
+      body: formData
+    });
+    return true;
+  } catch (error) {
+    console.warn(`Action ${action} gagal:`, error);
+    return false;
+  }
 }
 
 /* ─────────────────────────────────────────────
@@ -1140,8 +1500,8 @@ async function presensiSeminar(seminarId) {
        * oleh Google Apps Script di sisi server sebelum menyimpan ke Sheets.
        * Status dari Apps Script yang menjadi acuan keabsahan presensi.
        */
-      let status  = "Valid";
-      let catatan = "Sesuai lokasi, waktu, dan akurasi GPS.";
+      let status  = "Menunggu Validasi";
+      let catatan = "Sesuai lokasi, waktu, dan akurasi GPS. Menunggu validasi dosen/admin.";
 
       if (!withinTime) {
         status  = "Ditolak";
@@ -1175,7 +1535,7 @@ async function presensiSeminar(seminarId) {
 
       renderDashboard();
 
-      const toastType = status === "Valid" ? "success" : status === "Perlu Validasi" ? "warning" : "danger";
+      const toastType = status === "Valid" ? "success" : (status === "Perlu Validasi" || status === "Menunggu Validasi") ? "warning" : "danger";
       showToast(`Presensi tersimpan: ${status} — ${catatan}`, toastType, 6000);
 
       /* Sinkronisasi ke Google Sheets */
@@ -1210,23 +1570,7 @@ async function presensiSeminar(seminarId) {
    FIX: mengembalikan boolean sukses/gagal + retry queue
 ───────────────────────────────────────────── */
 async function syncToGoogleSheet(payload, addRetryOnFail = true) {
-  if (!CONFIG.appsScriptUrl) return true; // mode demo, anggap berhasil
-
-  const formData = new URLSearchParams();
-  formData.append("action", "savePresensi");
-  Object.keys(payload).forEach((key) => formData.append(key, String(payload[key])));
-
-  try {
-    await fetch(CONFIG.appsScriptUrl, {
-      method: "POST",
-      mode: "no-cors",
-      body: formData
-    });
-    return true;
-  } catch (error) {
-    console.warn("Sinkronisasi ke Google Sheets gagal:", error);
-    return false;
-  }
+  return postToAppsScript("savePresensi", payload);
 }
 
 /* ─────────────────────────────────────────────
@@ -1263,6 +1607,10 @@ $("btnRetrySync").addEventListener("click", () => {
   showToast("Mencoba sinkronisasi ulang…", "info");
   processRetryQueue();
 });
+
+$("btnToggleSubmitSeminar").addEventListener("click", () => toggleSeminarForm(true));
+$("btnCancelSubmitSeminar").addEventListener("click", () => toggleSeminarForm(false));
+$("seminarForm").addEventListener("submit", submitSeminar);
 
 /* ─────────────────────────────────────────────
    INIT — auto-login jika session tersimpan
